@@ -1,0 +1,42 @@
+﻿<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+
+    <TargetFrameworks>net5.0</TargetFrameworks>
+
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>Stratos</Authors>
+
+    <RepositoryUrl>https://github.com/stratosblue/Cuture.Extensions.Configuration.Nacos.git</RepositoryUrl>
+    <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <!--PackageVersion-->
+  <PropertyGroup>
+    <McrVersion>5.0.*</McrVersion>
+    <ProtobufVersion>3.17.*</ProtobufVersion>
+    <GrpcVersion>2.*</GrpcVersion>
+  </PropertyGroup>
+
+  <!--SourceLink-->
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(Configuration)'=='Release'">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.*" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)'=='Debug'">
+    <PackageReference Include="ConfigureAwaitChecker.Analyzer" Version="5.*" PrivateAssets="All" />
+  </ItemGroup>
+</Project>

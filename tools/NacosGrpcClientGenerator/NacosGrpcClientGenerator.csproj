@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grpc.Tools" Version="2.*">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="nacos_grpc_service.proto" GrpcServices="Client" OutputDir="%(RelativeDir)grpc_temp/modified" Access="public" CompileOutputs="false" />
+
+    <Protobuf Include="nacos_grpc_service_origin.proto" GrpcServices="Client" OutputDir="%(RelativeDir)grpc_temp/origin" Access="public" CompileOutputs="false" />
+
+    <Compile Remove="grpc_temp/**/*" />
+    <None Include="grpc_temp/**/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>

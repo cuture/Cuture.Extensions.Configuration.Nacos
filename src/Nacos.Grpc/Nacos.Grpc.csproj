@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../nacos.props" />
+
+  <PropertyGroup>
+    <Description>NacosGrpc客户端</Description>
+    <PackageTags>$(PackageTags) nacos-grpc-client</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Nacos\Nacos.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="$(ProtobufVersion)" />
+    <PackageReference Include="Grpc.Core" Version="$(GrpcVersion)" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,30 @@
+﻿syntax = "proto3";
+
+import "google/protobuf/any.proto";
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "Nacos.Grpc.GrpcService";
+
+message Metadata {
+
+    string type = 3;
+    string clientIp = 8;
+    map<string, string> headers = 7;
+}
+
+message Payload {
+    Metadata metadata = 2;
+    google.protobuf.Any body = 3;
+}
+
+service NacosTransport {
+    //请求Stream返回
+    rpc RequestStream (Payload) returns (stream Payload) {
+    }
+    //请求
+    rpc Request (Payload) returns (Payload) {
+    }
+    //双向流请求
+    rpc BiStreamRequest (stream Payload) returns (stream Payload) {
+    }
+}

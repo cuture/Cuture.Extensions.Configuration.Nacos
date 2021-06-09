@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../extensions.props" />
+
+  <PropertyGroup>
+    <Description>轻量的Microsoft.Extensions.Configuration的Nacos配置源 - Grpc客户端包</Description>
+    <PackageTags>$(PackageTags) nacos-grpc-client</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Nacos.Grpc\**\*.cs" Exclude="..\Nacos.Grpc\obj\**\*" Link="Nacos.Grpc\%(RecursiveDir)%(FileName)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="$(ProtobufVersion)" />
+    <PackageReference Include="Grpc.Core" Version="$(GrpcVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Cuture.Extensions.Configuration.Nacos\Cuture.Extensions.Configuration.Nacos.csproj" />
+  </ItemGroup>
+</Project>

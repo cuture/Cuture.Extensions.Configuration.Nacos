@@ -1,0 +1,6 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Cuture.Extensions.Configuration.Nacos\Cuture.Extensions.Configuration.Nacos.csproj" />
+  </ItemGroup>
+</Project>

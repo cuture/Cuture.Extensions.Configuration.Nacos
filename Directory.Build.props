@@ -1,0 +1,12 @@
+﻿<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+
+    <TargetFramework>net5.0</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+    
+    <NoWarn>$(NoWarn);CS8618</NoWarn>
+  </PropertyGroup>
+</Project>
