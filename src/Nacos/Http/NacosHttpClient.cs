@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
+
 using Nacos.Http.Messages;
 
 namespace Nacos.Http
@@ -81,7 +82,7 @@ namespace Nacos.Http
 
             try
             {
-                await _serverAddressAccessor.InitAsync().ConfigureAwait(false);
+                await _serverAddressAccessor.InitAsync(RunningToken).ConfigureAwait(false);
 
                 await _accessTokenService.InitAsync().ConfigureAwait(false);
 
@@ -128,7 +129,7 @@ namespace Nacos.Http
                 {
                     Logger?.LogDebug("执行请求 {0} - TargetServer: {1}", request, server);
 
-                    using var client = _httpClientFactory.CreateClient(server);
+                    using var client = _httpClientFactory.CreateClient(server.HttpUri);
 
                     using var httpRequest = request.ToHttpRequestMessage(server);
 
@@ -183,6 +184,8 @@ namespace Nacos.Http
 
         #endregion Protected 方法
 
+        #region Private 方法
+
         private void PrepareRequest(HttpRequestMessage httpRequest)
         {
             var uriBuilder = new UriBuilder(httpRequest.RequestUri!);
@@ -197,6 +200,8 @@ namespace Nacos.Http
 
             httpRequest.RequestUri = uriBuilder.Uri;
         }
+
+        #endregion Private 方法
 
         #region Dispose
 

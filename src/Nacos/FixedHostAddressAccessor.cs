@@ -20,6 +20,7 @@ namespace Nacos
         /// <inheritdoc/>
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
+
 using Nacos.Http.Messages;
 
 namespace Nacos
@@ -120,7 +121,7 @@ namespace Nacos
                 {
                     using var httpRequest = loginRequest.ToHttpRequestMessage(server);
 
-                    using var client = _httpClientFactory.CreateClient(server);
+                    using var client = _httpClientFactory.CreateClient(server.HttpUri);
 
                     _logger?.LogInformation("使用用户名 {0} 登录 {1}", loginRequest.Account, server);
 
@@ -155,6 +156,7 @@ namespace Nacos
                 {
                     _logger?.LogError("使用用户名 {0} 登录 {1} 失败 - StatusCode: {2} Message: {3}", loginRequest.Account, server, responseMessage.StatusCode, content);
                 }
+                _serverAddressAccessor.MoveNextAddress();
             }
 
             throw new LoginFailException("Nacos登录失败 - 已尝试所有服务地址");

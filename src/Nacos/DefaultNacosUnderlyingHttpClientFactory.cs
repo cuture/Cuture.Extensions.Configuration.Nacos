@@ -10,9 +10,24 @@ namespace Nacos
     /// <inheritdoc cref="INacosUnderlyingHttpClientFactory"/>
     public class DefaultNacosUnderlyingHttpClientFactory : INacosUnderlyingHttpClientFactory
     {
+        #region Private 字段
+
         private readonly CancellationTokenSource _runningTokenSource = new();
         private bool _disposedValue;
         private CountingNacosHttpClientHandler _httpClientHandler = new();
+
+        #endregion Private 字段
+
+        #region Public 属性
+
+        /// <summary>
+        /// 共享的 <see cref="DefaultNacosUnderlyingHttpClientFactory"/>
+        /// </summary>
+        public static INacosUnderlyingHttpClientFactory Shared => new DefaultNacosUnderlyingHttpClientFactory();
+
+        #endregion Public 属性
+
+        #region Public 构造函数
 
         /// <inheritdoc cref="DefaultNacosUnderlyingHttpClientFactory"/>
         public DefaultNacosUnderlyingHttpClientFactory()
@@ -32,10 +47,12 @@ namespace Nacos
             }, token);
         }
 
+        #endregion Public 构造函数
+
         #region Public 方法
 
         /// <inheritdoc/>
-        public HttpClient CreateClient(ServerUri uri)
+        public HttpClient CreateClient(Uri uri)
         {
             if (_disposedValue)
             {
@@ -44,7 +61,7 @@ namespace Nacos
 
             return new CountingNacosHttpClient(_httpClientHandler)
             {
-                BaseAddress = uri.HttpUri,
+                BaseAddress = uri,
                 Timeout = Timeout.InfiniteTimeSpan
             };
         }
@@ -86,9 +103,17 @@ namespace Nacos
 
         #endregion Dispose
 
+        #region Private 类
+
         private class CountingNacosHttpClient : HttpClient
         {
+            #region Private 字段
+
             private readonly CountingNacosHttpClientHandler _handler;
+
+            #endregion Private 字段
+
+            #region Public 构造函数
 
             public CountingNacosHttpClient(CountingNacosHttpClientHandler handler) : base(handler, false)
             {
@@ -96,26 +121,42 @@ namespace Nacos
                 _handler.IncrementReference();
             }
 
+            #endregion Public 构造函数
+
+            #region Protected 方法
+
             protected override void Dispose(bool disposing)
             {
                 _handler.DecrementReference();
 
                 base.Dispose(disposing);
             }
+
+            #endregion Protected 方法
         }
 
         private class CountingNacosHttpClientHandler : HttpClientHandler
         {
+            #region Private 字段
+
             private readonly object _syncRoot = new();
             private bool _disposeReady = false;
 
             private int _referenceCount = 0;
+
+            #endregion Private 字段
+
+            #region Public 构造函数
 
             public CountingNacosHttpClientHandler()
             {
                 UseCookies = false;
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli;
             }
+
+            #endregion Public 构造函数
+
+            #region Public 方法
 
             public void DecrementReference()
             {
@@ -161,6 +202,10 @@ namespace Nacos
                     }
                 }
             }
+
+            #endregion Public 方法
         }
+
+        #endregion Private 类
     }
 }

@@ -53,7 +53,7 @@ namespace Nacos.Http
 
             ClientName = clientName;
             ServerAddressAccessor = serverAddressAccessor ?? throw new ArgumentNullException(nameof(serverAddressAccessor));
-            HttpClientFactory = httpClientFactory ?? new DefaultNacosUnderlyingHttpClientFactory();
+            HttpClientFactory = httpClientFactory ?? DefaultNacosUnderlyingHttpClientFactory.Shared;
         }
 
         #endregion Public 构造函数

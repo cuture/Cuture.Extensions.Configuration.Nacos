@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Nacos.Utils;
@@ -74,7 +75,7 @@ namespace Nacos
         public ServerUri GetRandomAddress() => _addresses[RandomUtil.Random(_addresses.Length)];
 
         /// <inheritdoc/>
-        public Task InitAsync() => Task.CompletedTask;
+        public Task InitAsync(CancellationToken token) => Task.CompletedTask;
 
         /// <inheritdoc/>
         public ServerUri MoveNextAddress()
@@ -93,26 +94,6 @@ namespace Nacos
                 }
                 CurrentAddress = _addresses[_index];
                 return CurrentAddress;
-            }
-        }
-
-        /// <inheritdoc/>
-        public ServerUri MoveNextRandomAddress()
-        {
-            if (_addresses.Length == 1)
-            {
-                return _addresses[0];
-            }
-            while (true)
-            {
-                var index = RandomUtil.Random(_addresses.Length);
-                if (_index != index)
-                {
-                    var next = _addresses[index];
-                    _index = index;
-                    CurrentAddress = next;
-                    return next;
-                }
             }
         }
 

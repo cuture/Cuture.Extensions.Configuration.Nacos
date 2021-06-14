@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.Extensions.Logging;
 
 using Nacos.Grpc.GrpcService;
 using Nacos.Grpc.Messages;
 using Nacos.Internal;
+
 using DuplexStreamingCall = global::Grpc.Core.AsyncDuplexStreamingCall<Nacos.Grpc.GrpcService.Payload, Nacos.Grpc.GrpcService.Payload>;
 using GrpcChannel = global::Grpc.Core.Channel;
 
@@ -104,7 +106,7 @@ namespace Nacos.Grpc
 
             try
             {
-                await _serverAddressAccessor.InitAsync().ConfigureAwait(false);
+                await _serverAddressAccessor.InitAsync(RunningToken).ConfigureAwait(false);
 
                 await _accessTokenService.InitAsync().ConfigureAwait(false);
 

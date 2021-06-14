@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Nacos
@@ -43,20 +44,15 @@ namespace Nacos
         /// <summary>
         /// 初始化
         /// </summary>
+        /// <param name="token"></param>
         /// <returns></returns>
-        Task InitAsync();
+        Task InitAsync(CancellationToken token);
 
         /// <summary>
         /// 切换到下一个地址
         /// </summary>
         /// <returns></returns>
         ServerUri MoveNextAddress();
-
-        /// <summary>
-        /// 切换到另一个随机地址
-        /// </summary>
-        /// <returns></returns>
-        ServerUri MoveNextRandomAddress();
 
         #endregion Public 方法
     }

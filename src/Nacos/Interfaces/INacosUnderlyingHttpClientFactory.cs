@@ -15,7 +15,7 @@ namespace Nacos
         /// </summary>
         /// <param name="uri"></param>
         /// <returns></returns>
-        HttpClient CreateClient(ServerUri uri);
+        HttpClient CreateClient(Uri uri);
 
         #endregion Public 方法
     }

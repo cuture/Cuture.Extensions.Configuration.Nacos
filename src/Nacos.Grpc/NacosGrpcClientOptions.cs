@@ -1,4 +1,5 @@
 ﻿using System;
+
 using Microsoft.Extensions.Logging;
 
 using Nacos.Grpc;
@@ -77,7 +78,7 @@ namespace Nacos
             ClientName = clientName;
             ServerAddressAccessor = serverAddressAccessor ?? throw new ArgumentNullException(nameof(serverAddressAccessor));
 
-            HttpClientFactory = httpClientFactory ?? new DefaultNacosUnderlyingHttpClientFactory();
+            HttpClientFactory = httpClientFactory ?? DefaultNacosUnderlyingHttpClientFactory.Shared;
             HostAddressAccessor = hostAddressAccessor ?? new AutomaticHostAddressAccessor();
         }
 
