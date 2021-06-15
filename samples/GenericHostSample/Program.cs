@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -8,6 +9,8 @@ namespace GenericHostSample
 {
     internal class Program
     {
+        #region Public 方法
+
         public static async Task Main(string[] args)
         {
             var hostBuilder = Host.CreateDefaultBuilder(args)
@@ -27,11 +30,17 @@ namespace GenericHostSample
             await host.RunAsync();
         }
 
+        #endregion Public 方法
+
+        #region Private 方法
+
         private static void AddNacosWithConfiguration(IConfigurationBuilder builder)
         {
             var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Information));
 
-            var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.nacos.configuration.json").Build();
+            var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.nacos.configuration.json")
+                                                          .AddUserSecrets<Program>()
+                                                          .Build();
 
             //builder.AddNacos(configuration)  //仅使用Http
             builder.AddNacosWithGrpcClientAllowed(configuration, options => options.UseLoggerFactory(loggerFactory))    //允许使用Grpc
@@ -54,5 +63,7 @@ namespace GenericHostSample
             })
             .AddJsonFile("appsettings.lastvalue.json");
         }
+
+        #endregion Private 方法
     }
 }

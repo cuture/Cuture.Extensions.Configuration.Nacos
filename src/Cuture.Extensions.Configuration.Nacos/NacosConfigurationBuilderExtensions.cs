@@ -197,7 +197,8 @@ namespace Microsoft.Extensions.Configuration
 
         private static void ConfigurationUser(NacosConfigurationSourceOptions options, IConfiguration configuration)
         {
-            if (configuration.TryGetSection("User", out var userSection))
+            //TODO 根据服务地址自动选择
+            if (configuration.TryGetSection("Auth:User", out var userSection))  //Nacos登录信息
             {
                 if (userSection.TryGetSection("Account", out var accountSection)
                     ^ userSection.TryGetSection("Password", out var passwordSection))
@@ -209,6 +210,13 @@ namespace Microsoft.Extensions.Configuration
                 {
                     options.WithUser(accountSection.Value, passwordSection.Value);
                 }
+            }
+            else if (configuration.TryGetSection("Auth:ACM", out var acmSection))   //阿里云ACM认证信息
+            {
+                //TODO 完成ACM
+                //"RegionId": "",
+                //"AccessKeyId": "",
+                //"AccessKeySecret": ""
             }
         }
 
