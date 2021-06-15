@@ -7,6 +7,8 @@ namespace Nacos.Http.Messages
     /// </summary>
     public class QueryConfigurationRequest : NacosHttpRequest, INacosUniqueConfiguration
     {
+        #region Public 属性
+
         /// <inheritdoc/>
         public string DataId { get; private set; }
 
@@ -16,6 +18,10 @@ namespace Nacos.Http.Messages
         /// <inheritdoc/>
         public string Namespace { get; private set; }
 
+        #endregion Public 属性
+
+        #region Public 构造函数
+
         /// <inheritdoc cref="QueryConfigurationRequest"/>
         public QueryConfigurationRequest(NacosConfigurationDescriptor descriptor)
         {
@@ -23,6 +29,13 @@ namespace Nacos.Http.Messages
             DataId = descriptor.DataId;
             Group = descriptor.Group;
         }
+
+        #endregion Public 构造函数
+
+        #region Public 方法
+
+        /// <inheritdoc/>
+        public override string? GetSpasSignData() => $"{Namespace}+{Group}";
 
         /// <inheritdoc/>
         public string GetUniqueKey() => INacosUniqueConfiguration.GenerateUniqueKey(this);
@@ -32,7 +45,14 @@ namespace Nacos.Http.Messages
         {
             //HACK UrlEncode？
             var query = $"tenant={Namespace}&dataId={DataId}&group={Group}";
-            return new HttpRequestMessage(HttpMethod.Get, MakeUri(uri, "nacos/v1/cs/configs", query));
+            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, MakeUri(uri, "nacos/v1/cs/configs", query));
+            foreach (var item in Headers)
+            {
+                httpRequestMessage.Headers.TryAddWithoutValidation(item.Key, item.Value);
+            }
+            return httpRequestMessage;
         }
+
+        #endregion Public 方法
     }
 }

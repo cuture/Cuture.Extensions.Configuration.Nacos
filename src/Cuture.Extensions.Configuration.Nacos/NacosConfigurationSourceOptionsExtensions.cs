@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Microsoft.Extensions.Logging;
 
@@ -28,7 +29,9 @@ namespace Microsoft.Extensions.Configuration
 
         internal static INacosConfigurationClient CreateHttpConfigurationClient(NacosConfigurationSourceOptions options)
         {
-            var serverAddressAccessor = new FixedServerAddressAccessor(options.Servers.ToArray());
+            IServerAddressAccessor serverAddressAccessor = options.Servers.TryGetAcmServerUris(out var serverUris)
+                                                                ? new RemoteServerAddressAccessor(serverUris.First().HttpUri, options.LoggerFactory?.CreateLogger<RemoteServerAddressAccessor>())
+                                                                : new FixedServerAddressAccessor(options.Servers.ToArray());
 
             var clientOptions = new NacosHttpClientOptions($"NacosHttpClient-{Guid.NewGuid():n}", serverAddressAccessor)
             {

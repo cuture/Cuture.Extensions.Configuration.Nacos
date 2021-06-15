@@ -19,6 +19,7 @@ namespace Nacos.Http
         private readonly IAccessTokenService _accessTokenService;
         private readonly INacosUnderlyingHttpClientFactory _httpClientFactory;
         private readonly string _name;
+        private readonly INacosRequestSigner _requestSigner;
         private readonly CancellationTokenSource _runningTokenSource;
         private readonly IServerAddressAccessor _serverAddressAccessor;
         private bool _disposedValue;
@@ -61,6 +62,10 @@ namespace Nacos.Http
             _accessTokenService = clientOptions.User is null
                                         ? new NoneAccessTokenService()
                                         : new AccessTokenService(clientOptions.User, _serverAddressAccessor, _httpClientFactory, clientOptions.LoggerFactory);
+
+            _requestSigner = clientOptions.AcsProfile is null
+                                    ? new NullRequestSigner()
+                                    : new ACMRequestSigner(clientOptions.AcsProfile.AccessKeyId, clientOptions.AcsProfile.AccessKeySecret);
 
             _runningTokenSource = new CancellationTokenSource();
             RunningToken = _runningTokenSource.Token;
@@ -127,6 +132,8 @@ namespace Nacos.Http
                 var server = _serverAddressAccessor.CurrentAddress;
                 try
                 {
+                    await _requestSigner.SignAsync(request).ConfigureAwait(false);
+
                     Logger?.LogDebug("执行请求 {0} - TargetServer: {1}", request, server);
 
                     using var client = _httpClientFactory.CreateClient(server.HttpUri);

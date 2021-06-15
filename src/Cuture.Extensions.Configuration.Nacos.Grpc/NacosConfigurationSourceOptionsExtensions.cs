@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Linq;
+
+using Microsoft.Extensions.Logging;
+
 using Nacos;
 using Nacos.Grpc;
 
@@ -9,6 +13,8 @@ namespace Microsoft.Extensions.Configuration
     /// </summary>
     public static partial class NacosConfigurationSourceOptionsExtensions
     {
+        #region Public 方法
+
         /// <summary>
         /// 使用Grpc客户端
         /// </summary>
@@ -20,9 +26,15 @@ namespace Microsoft.Extensions.Configuration
             return options;
         }
 
+        #endregion Public 方法
+
+        #region Private 方法
+
         private static INacosConfigurationClient CreateGrpcConfigurationClient(NacosConfigurationSourceOptions options)
         {
-            var serverAddressAccessor = new FixedServerAddressAccessor(options.Servers.ToArray());
+            IServerAddressAccessor serverAddressAccessor = options.Servers.TryGetAcmServerUris(out var serverUris)
+                                                                ? new RemoteServerAddressAccessor(serverUris.First().HttpUri, options.LoggerFactory?.CreateLogger<RemoteServerAddressAccessor>())
+                                                                : new FixedServerAddressAccessor(options.Servers.ToArray());
 
             IHostAddressAccessor hostAddressAccessor = options.SpecifyClientIP is null
                                                             ? new AutomaticHostAddressAccessor(options.ClientIPSubnet)
@@ -39,5 +51,7 @@ namespace Microsoft.Extensions.Configuration
 
             return new NacosConfigurationGrpcClient(clientOptions);
         }
+
+        #endregion Private 方法
     }
 }

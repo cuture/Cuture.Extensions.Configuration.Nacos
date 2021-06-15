@@ -26,6 +26,7 @@ namespace Nacos.Grpc
         private readonly IMessageSerializer _messageSerializer;
         private readonly string _name;
         private readonly IRequestProcessor _requestProcessor;
+        private readonly INacosRequestSigner _requestSigner;
         private readonly CancellationTokenSource _runningTokenSource;
         private readonly IServerAddressAccessor _serverAddressAccessor;
         private CancellationTokenSource? _connectionTokenSource;
@@ -82,6 +83,10 @@ namespace Nacos.Grpc
             _accessTokenService = clientOptions.User is null
                                         ? new NoneAccessTokenService()
                                         : new AccessTokenService(clientOptions.User, _serverAddressAccessor, clientOptions.HttpClientFactory, clientOptions.LoggerFactory);
+
+            _requestSigner = clientOptions.AcsProfile is null
+                          ? new NullRequestSigner()
+                          : new ACMRequestSigner(clientOptions.AcsProfile.AccessKeyId, clientOptions.AcsProfile.AccessKeySecret);
 
             _messageSerializer = clientOptions.MessageSerializer ?? MessageSerializer.Instance;
             _clientAbilities = clientOptions.ClientAbilities ?? new ClientAbilities();
@@ -198,6 +203,8 @@ namespace Nacos.Grpc
 
             requestPayload.Metadata.ClientIp = _hostAddressAccessor.Address.ToString();
 
+            await _requestSigner.SignAsync(request).ConfigureAwait(false);
+
             Logger?.LogDebugSendPayload(requestPayload);
 
             var responsePayload = await transportClient.RequestAsync(requestPayload, cancellationToken: token);
@@ -230,6 +237,7 @@ namespace Nacos.Grpc
         {
             payload.Metadata.ClientIp = _hostAddressAccessor.Address.ToString();
 
+            //TODO 此处需要进行签名？
             Logger?.LogDebugSendPayload(payload);
 
             await duplexStreamingCall.RequestStream.WriteAsync(payload).ConfigureAwait(false);
@@ -374,6 +382,9 @@ namespace Nacos.Grpc
                 ClientIp = _hostAddressAccessor.Address.ToString(),
                 Abilities = _clientAbilities,
             };
+
+            //TODO 双向连接只在这里签名一次是否可行
+            await _requestSigner.SignAsync(connectionSetupRequest).ConfigureAwait(false);
 
             await InternalRequestByBiStreamAsync(_messageSerializer.Serialize(connectionSetupRequest), duplexStreamingCall).ConfigureAwait(false);
         }

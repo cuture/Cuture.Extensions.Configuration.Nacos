@@ -9,7 +9,7 @@ namespace Nacos
     /// <summary>
     /// 针对ACM的 <see cref="INacosRequestSigner"/>
     /// </summary>
-    internal class ACMRequestSigner : INacosRequestSigner
+    public class ACMRequestSigner : INacosRequestSigner
     {
         #region Private 字段
 

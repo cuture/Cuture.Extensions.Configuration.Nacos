@@ -49,7 +49,7 @@ namespace Nacos
         #region Public 构造函数
 
         /// <inheritdoc cref="RemoteServerAddressAccessor"/>
-        public RemoteServerAddressAccessor(Uri serverListRequestUri, ILogger<RemoteServerAddressAccessor> logger)
+        public RemoteServerAddressAccessor(Uri serverListRequestUri, ILogger<RemoteServerAddressAccessor>? logger)
         {
             _serverListRequestUri = serverListRequestUri ?? throw new ArgumentNullException(nameof(serverListRequestUri));
             _logger = logger;
@@ -160,7 +160,15 @@ namespace Nacos
                     var content = await client.GetStringAsync(_serverListRequestUri, token).ConfigureAwait(false);
                     var lines = content.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
-                    serverUris = lines.Select(m => new Uri(m)).ToArray();
+                    serverUris = lines.Select(m =>
+                    {
+                        var uriBuilder = new UriBuilder(m.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? m : $"http://{m}");
+                        if (!m.Contains(':'))
+                        {
+                            uriBuilder.Port = Constants.DEFAULT_HTTP_PORT;
+                        }
+                        return uriBuilder.Uri;
+                    }).ToArray();
 
                     break;
                 }

@@ -8,8 +8,13 @@ namespace Nacos
     /// </summary>
     public sealed class ServerUri
     {
+        #region Private 字段
+
+        private readonly bool _isAliyunAcm;
         private Uri? _grpcUri;
         private Uri? _httpUri;
+
+        #endregion Private 字段
 
         #region Public 属性
 
@@ -53,6 +58,15 @@ namespace Nacos
         #region Private 构造函数
 
         /// <inheritdoc cref="ServerUri"/>
+        public ServerUri(Uri acmServerListUri)
+        {
+            _httpUri = acmServerListUri;
+            _isAliyunAcm = true;
+            Host = acmServerListUri.Host;
+            Scheme = acmServerListUri.Scheme;
+        }
+
+        /// <inheritdoc cref="ServerUri"/>
         private ServerUri(string host, int httpPort, int grpcPort, string scheme)
         {
             Host = host;
@@ -90,7 +104,26 @@ namespace Nacos
 
             var uriScheme = uri.Scheme.ToLowerInvariant();
 
-            if (uriScheme.Contains("grpc", StringComparison.Ordinal))
+            if (uriScheme.Contains("acm", StringComparison.Ordinal))
+            {
+                var uriBuilder = new UriBuilder(uri)
+                {
+                    Scheme = GetScheme(uriScheme)
+                };
+
+                if (uriBuilder.Port == -1)
+                {
+                    uriBuilder.Port = 8080;
+                }
+                if (string.IsNullOrWhiteSpace(uriBuilder.Path)
+                    || uriBuilder.Path.Length == 1)
+                {
+                    uriBuilder.Path = "/nacos/serverlist";
+                }
+                var acmServerListUri = uriBuilder.Uri;
+                return new ServerUri(acmServerListUri);
+            }
+            else if (uriScheme.Contains("grpc", StringComparison.Ordinal))
             {
                 grpcPort = uri.Port;
 
@@ -107,13 +140,29 @@ namespace Nacos
                     grpcPort = httpPort + Constants.DEFAULT_GRPC_PORT_OFFSET;
                 }
             }
+            else
+            {
+                throw new ArgumentException("无法转换为Nacos服务地址", nameof(uri));
+            }
 
-            uriScheme = uriScheme.Contains("https", StringComparison.OrdinalIgnoreCase)
-                            ? "https"
-                            : "http";
+            uriScheme = GetScheme(uriScheme);
 
             return new ServerUri(host, httpPort, grpcPort, uriScheme);
+
+            static string GetScheme(string uriScheme)
+            {
+                uriScheme = uriScheme.Contains("https", StringComparison.OrdinalIgnoreCase)
+                                ? "https"
+                                : "http";
+                return uriScheme;
+            }
         }
+
+        /// <summary>
+        /// 是否为阿里云ACM
+        /// </summary>
+        /// <returns></returns>
+        public bool IsAliyunAcm() => _isAliyunAcm;
 
         /// <inheritdoc/>
         public override string ToString() => HttpUri.ToString();

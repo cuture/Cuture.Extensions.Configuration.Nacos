@@ -197,8 +197,24 @@ namespace Microsoft.Extensions.Configuration
 
         private static void ConfigurationUser(NacosConfigurationSourceOptions options, IConfiguration configuration)
         {
-            //TODO 根据服务地址自动选择
-            if (configuration.TryGetSection("Auth:User", out var userSection))  //Nacos登录信息
+            if (options.Servers.TryGetAcmServerUris(out _))
+            {
+                if (configuration.TryGetSection("Auth:ACS", out var acsSection))   //阿里云ACS认证信息
+                {
+                    if (acsSection.TryGetSection("RegionId", out var regionIdSection)
+                        && regionIdSection is not null
+                        && acsSection.TryGetSection("AccessKeyId", out var accessKeyIdSection)
+                        && accessKeyIdSection is not null
+                        && acsSection.TryGetSection("AccessKeySecret", out var accessKeySecretSection)
+                        && accessKeySecretSection is not null)
+                    {
+                        options.WithAliyunACS(regionIdSection.Value, accessKeyIdSection.Value, accessKeySecretSection.Value);
+                        return;
+                    }
+                }
+                throw new ArgumentException("Auth:ACS 未正确设置");
+            }
+            else if (configuration.TryGetSection("Auth:User", out var userSection))  //Nacos登录信息
             {
                 if (userSection.TryGetSection("Account", out var accountSection)
                     ^ userSection.TryGetSection("Password", out var passwordSection))
@@ -209,22 +225,6 @@ namespace Microsoft.Extensions.Configuration
                     && passwordSection is not null)
                 {
                     options.WithUser(accountSection.Value, passwordSection.Value);
-                }
-            }
-            else if (configuration.TryGetSection("Auth:ACS", out var acsSection))   //阿里云ACS认证信息
-            {
-                if (acsSection.TryGetSection("RegionId", out var regionIdSection)
-                    && regionIdSection is not null
-                    && acsSection.TryGetSection("AccessKeyId", out var accessKeyIdSection)
-                    && accessKeyIdSection is not null
-                    && acsSection.TryGetSection("AccessKeySecret", out var accessKeySecretSection)
-                    && accessKeySecretSection is not null)
-                {
-                    options.WithAliyunACS(regionIdSection.Value, accessKeyIdSection.Value, accessKeySecretSection.Value);
-                }
-                else
-                {
-                    throw new ArgumentException("Auth:ACS 未正确设置");
                 }
             }
         }
