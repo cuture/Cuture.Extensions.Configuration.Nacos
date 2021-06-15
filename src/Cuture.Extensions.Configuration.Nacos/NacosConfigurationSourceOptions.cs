@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net;
+
 using Microsoft.Extensions.Logging;
 
 namespace Nacos
@@ -12,6 +13,9 @@ namespace Nacos
     public class NacosConfigurationSourceOptions
     {
         #region Public 属性
+
+        /// <inheritdoc cref="AliyunAcsProfile"/>
+        public AliyunAcsProfile? AcsProfile { get; set; }
 
         /// <summary>
         /// 客户端创建委托

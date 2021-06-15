@@ -203,7 +203,7 @@ namespace Microsoft.Extensions.Configuration
                 if (userSection.TryGetSection("Account", out var accountSection)
                     ^ userSection.TryGetSection("Password", out var passwordSection))
                 {
-                    throw new ArgumentException("User:Account 和 User:Password 必须同时设置");
+                    throw new ArgumentException("Auth:User:Account 和 Auth:User:Password 必须同时设置");
                 }
                 if (accountSection is not null
                     && passwordSection is not null)
@@ -211,12 +211,21 @@ namespace Microsoft.Extensions.Configuration
                     options.WithUser(accountSection.Value, passwordSection.Value);
                 }
             }
-            else if (configuration.TryGetSection("Auth:ACM", out var acmSection))   //阿里云ACM认证信息
+            else if (configuration.TryGetSection("Auth:ACS", out var acsSection))   //阿里云ACS认证信息
             {
-                //TODO 完成ACM
-                //"RegionId": "",
-                //"AccessKeyId": "",
-                //"AccessKeySecret": ""
+                if (acsSection.TryGetSection("RegionId", out var regionIdSection)
+                    && regionIdSection is not null
+                    && acsSection.TryGetSection("AccessKeyId", out var accessKeyIdSection)
+                    && accessKeyIdSection is not null
+                    && acsSection.TryGetSection("AccessKeySecret", out var accessKeySecretSection)
+                    && accessKeySecretSection is not null)
+                {
+                    options.WithAliyunACS(regionIdSection.Value, accessKeyIdSection.Value, accessKeySecretSection.Value);
+                }
+                else
+                {
+                    throw new ArgumentException("Auth:ACS 未正确设置");
+                }
             }
         }
 

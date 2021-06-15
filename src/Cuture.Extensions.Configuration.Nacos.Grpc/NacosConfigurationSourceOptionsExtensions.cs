@@ -34,6 +34,7 @@ namespace Microsoft.Extensions.Configuration
             {
                 LoggerFactory = options.LoggerFactory,
                 User = options.User,
+                AcsProfile = options.AcsProfile,
             };
 
             return new NacosConfigurationGrpcClient(clientOptions);

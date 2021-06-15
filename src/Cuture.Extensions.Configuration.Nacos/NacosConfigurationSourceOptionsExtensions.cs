@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using Microsoft.Extensions.Logging;
+
 using Nacos;
 using Nacos.Http;
 
@@ -32,12 +34,15 @@ namespace Microsoft.Extensions.Configuration
             {
                 LoggerFactory = options.LoggerFactory,
                 User = options.User,
+                AcsProfile = options.AcsProfile,
             };
 
             return new NacosConfigurationHttpClient(clientOptions);
         }
 
         #endregion HttpClient
+
+        #region Public 方法
 
         /// <summary>
         /// 添加服务地址
@@ -88,6 +93,20 @@ namespace Microsoft.Extensions.Configuration
         }
 
         /// <summary>
+        /// 使用 阿里云ACS
+        /// </summary>
+        /// <param name="options"></param>
+        /// <param name="regionId"></param>
+        /// <param name="accessKeyId"></param>
+        /// <param name="accessKeySecret"></param>
+        /// <returns></returns>
+        public static NacosConfigurationSourceOptions WithAliyunACS(this NacosConfigurationSourceOptions options, string regionId, string accessKeyId, string accessKeySecret)
+        {
+            options.AcsProfile = new(regionId, accessKeyId, accessKeySecret);
+            return options;
+        }
+
+        /// <summary>
         /// 使用用户
         /// </summary>
         /// <param name="options"></param>
@@ -99,6 +118,8 @@ namespace Microsoft.Extensions.Configuration
             options.User = new NacosUser(account, password);
             return options;
         }
+
+        #endregion Public 方法
 
         #region LoadConfiguration
 
