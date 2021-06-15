@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Nacos.Utils
@@ -11,37 +12,64 @@ namespace Nacos.Utils
         #region Public 方法
 
         /// <summary>
-        /// 获取Md5
+        /// 计算HMACSHA1
         /// </summary>
         /// <param name="value"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
-        public static string GetMd5(string? value)
+        public static byte[] ComputeHMACSHA1(string value, string key)
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                return string.Empty;
-            }
+            var secrectKey = Encoding.UTF8.GetBytes(key);
 
-            return GetMd5(Encoding.UTF8.GetBytes(value));
+            using var hmac = new HMACSHA1(secrectKey);
+
+            hmac.Initialize();
+
+            var data = Encoding.UTF8.GetBytes(value);
+
+            return hmac.ComputeHash(data);
         }
 
         /// <summary>
-        /// 获取Md5
+        /// 计算MD5
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static string GetMd5(byte[] value)
+        public static byte[] ComputeMD5(string? value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return Array.Empty<byte>();
+            }
+
+            return ComputeMD5(Encoding.UTF8.GetBytes(value));
+        }
+
+        /// <summary>
+        /// 计算MD5
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static byte[] ComputeMD5(byte[] value)
         {
             if (value is null
                 || value.Length == 0)
             {
-                return string.Empty;
+                return Array.Empty<byte>();
             }
 
             using var md5 = MD5.Create();
 
-            byte[] hash = md5.ComputeHash(value);
+            return md5.ComputeHash(value);
+        }
 
+        /// <summary>
+        /// 转换为十六进制字符串
+        /// </summary>
+        /// <param name="hash"></param>
+        /// <returns></returns>
+        public static string ToHexString(this byte[] hash)
+        {
             var builder = new StringBuilder(32);
 
             foreach (byte item in hash)

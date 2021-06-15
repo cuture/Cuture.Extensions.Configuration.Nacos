@@ -20,6 +20,11 @@ namespace Nacos
             public const string SPAS_ACCESSKEY = "Spas-AccessKey";
 
             /// <summary>
+            /// Spas-Signature
+            /// </summary>
+            public const string SPAS_SIGNATURE = "Spas-Signature";
+
+            /// <summary>
             /// accessToken
             /// </summary>
             public const string ACCESS_TOKEN = Constants.ACCESS_TOKEN;

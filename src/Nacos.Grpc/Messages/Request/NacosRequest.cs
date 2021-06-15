@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 
+using Nacos.Messages;
 using Nacos.Utils;
 
 namespace Nacos.Grpc.Messages
@@ -8,7 +9,7 @@ namespace Nacos.Grpc.Messages
     /// <summary>
     /// Nacos请求
     /// </summary>
-    public abstract class NacosRequest
+    public abstract class NacosRequest : INacosRequest
     {
         #region Public 属性
 
@@ -46,25 +47,8 @@ namespace Nacos.Grpc.Messages
 
         #region Public 方法
 
-        /// <summary>
-        /// 签名请求
-        /// </summary>
-        /// <param name="appKey"></param>
-        /// <returns></returns>
-        public NacosRequest Sign(string? appKey = null)
-        {
-            var timestamp = Headers.ClientRequestTimestamp;
-            if (timestamp is null)
-            {
-                timestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString();
-                Headers.ClientRequestTimestamp = timestamp;
-                Headers.Timestamp = timestamp;
-            }
-
-            Headers.ClientRequestToken = HashUtil.GetMd5(timestamp + (string.IsNullOrWhiteSpace(appKey) ? "" : appKey));
-
-            return this;
-        }
+        /// <inheritdoc/>
+        public virtual string? GetSpasSignData() => string.Empty;
 
         #endregion Public 方法
     }

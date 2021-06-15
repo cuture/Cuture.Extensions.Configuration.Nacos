@@ -98,7 +98,7 @@ namespace Nacos
 
                 _logger?.LogDebug("开始订阅配置变更 - {0}", this);
 
-                var subscribeDescriptor = _descriptor.WithContent(_content, HashUtil.GetMd5(_content));
+                var subscribeDescriptor = _descriptor.WithContent(_content, HashUtil.ComputeMD5(_content).ToHexString());
 
                 _subscribeDisposer = await _client.SubscribeConfigurationChangeAsync(subscribeDescriptor, OnConfigurationChangeAsync, initToken).ConfigureAwait(false);
 

@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Nacos.Grpc.Messages
+namespace Nacos.Messages
 {
     /// <summary>
     /// Nacos请求的Headers
@@ -28,6 +28,11 @@ namespace Nacos.Grpc.Messages
         /// 
         /// </summary>
         public string? SpasAccessKey { get => InternalGetValue(Constants.Headers.SPAS_ACCESSKEY); set => InternalSetValue(Constants.Headers.SPAS_ACCESSKEY, value); }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string? SpasSignature { get => InternalGetValue(Constants.Headers.SPAS_SIGNATURE); set => InternalSetValue(Constants.Headers.SPAS_SIGNATURE, value); }
 
         /// <summary>
         /// 
@@ -71,7 +76,6 @@ namespace Nacos.Grpc.Messages
         {
             SetGenericHeaders();
         }
-
 
         /// <summary>
         /// <inheritdoc cref="NacosHeaders"/>

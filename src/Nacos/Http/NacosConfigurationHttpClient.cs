@@ -91,7 +91,7 @@ namespace Nacos.Http
 
                         await notifyCallback(newDescriptor, token).ConfigureAwait(false);
 
-                        descriptor = descriptor.WithContent(newDescriptor.Content, HashUtil.GetMd5(newDescriptor.Content));
+                        descriptor = descriptor.WithContent(newDescriptor.Content, HashUtil.ComputeMD5(newDescriptor.Content).ToHexString());
                     }
 
                     scaler.Reset();
