@@ -2,8 +2,8 @@ name: Publish Nuget Package
 
 on:
   release:
-    types: [released]
-    branches: [ master ]
+    types: [released,prereleased]
+    branches: [ main ]
 
 jobs:
   publish-with-build:
