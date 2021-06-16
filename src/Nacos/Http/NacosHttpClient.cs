@@ -30,6 +30,9 @@ namespace Nacos.Http
 
         #region Protected 属性
 
+        /// <inheritdoc/>
+        public NacosClientType Type => NacosClientType.Http;
+
         /// <summary>
         /// Logger
         /// </summary>

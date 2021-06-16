@@ -13,12 +13,13 @@
 - 更轻便直观的配置 (个人觉得);
 - 较少的包依赖 (可以在不引用Grpc包的情况下使用Http协议接入);
 - 更方便调试 (没有异步Timer...支持SourceLink);
+- 支持`阿里云ACM`（暂不支持加密配置）；
 
 ## Note
 - 当前仅实现了`Nacos`的`配置读取`功能，`不支持服务发现` (暂时没有需求...)
 - 没有实现任何`failover`机制 (基于文件缓存的`failover`对于容器化运行环境不是很有必要...)
 
-** 在`Nacos2.0.1 with docker`环境下开发，其它环境未测试。
+** 在`Nacos2.0.1 with docker`与`阿里云ACM`环境下开发，其它环境未测试。
 ** 单元测试代码暂时还没写...
 
 ------------------
@@ -66,14 +67,21 @@ Host.CreateDefaultBuilder(args)
 
 ```json
 {
-  "ClientType": "Grpc", //可选，客户端类型 - Http 或 Grpc（需要安装Grpc包，并使用对应的配置方法）默认为Http
-  "Servers": [ //Nacos服务器地址列表
+  "ClientType": "Grpc", //可选，客户端类型 - Http 或 Grpc（需要安装Grpc包，并使用对应的配置方法）默认为Http（阿里云ACM暂时不支持GRPC）
+  "Servers": [ //Nacos服务器地址列表（支持特殊定义的地址）
     "http://127.0.0.1:18848/",
     "http://127.0.0.1:8848/"
   ],
-  "User": { //用于登陆的用户信息
-    "Account": "username",
-    "Password": "password"
+  "Auth": { //认证信息节点
+    "User": { //用于Nacos登陆的用户信息
+      "Account": "username",
+      "Password": "password"
+    },
+    "ACS": { //用于阿里云ACS认证信息
+      "RegionId": "",
+      "AccessKeyId": "",
+      "AccessKeySecret": ""
+    }
   },
   "Configuration": { //Configuration配置
     "DefaultNamespace": "test1", //默认的命名空间，当订阅项不指定 Namespace 时，使用此值
@@ -121,4 +129,7 @@ http://127.0.0.1:8848/                          //解析结果 - HttpPort: 8848 
 http://127.0.0.1:8848/#GrpcPort=8849            //解析结果 - HttpPort: 8848 , GrpcPort: 8849
 http-grpc://127.0.0.1:9848/                     //解析结果 - HttpPort: 8848 , GrpcPort: 9848    （HttpPort为GrpcPort-1000）
 http-grpc://127.0.0.1:8849/#HttpPort=8848       //解析结果 - HttpPort: 8848 , GrpcPort: 8849
+
+http-endpoint-acm://acm.aliyun.com/             //解析结果 - 使用阿里云acm
+http-endpoint://127.0.0.1/list                  //解析结果 - 使用endpoint模式，内容仍然遵循此解析模式
 ```

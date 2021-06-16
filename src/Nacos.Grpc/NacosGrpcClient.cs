@@ -40,6 +40,9 @@ namespace Nacos.Grpc
 
         #region Protected 属性
 
+        /// <inheritdoc/>
+        public NacosClientType Type => NacosClientType.Grpc;
+
         /// <summary>
         /// Logger
         /// </summary>

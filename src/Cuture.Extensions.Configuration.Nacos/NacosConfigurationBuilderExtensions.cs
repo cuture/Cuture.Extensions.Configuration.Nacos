@@ -197,24 +197,29 @@ namespace Microsoft.Extensions.Configuration
 
         private static void ConfigurationUser(NacosConfigurationSourceOptions options, IConfiguration configuration)
         {
-            if (options.Servers.TryGetAcmServerUris(out _))
+            if (options.Servers.TryGetEndpointServerUris(out var endpointUris))
             {
-                if (configuration.TryGetSection("Auth:ACS", out var acsSection))   //阿里云ACS认证信息
+                if (endpointUris.Any(m => m.IsAliyunAcm())) //ACM
                 {
-                    if (acsSection.TryGetSection("RegionId", out var regionIdSection)
-                        && regionIdSection is not null
-                        && acsSection.TryGetSection("AccessKeyId", out var accessKeyIdSection)
-                        && accessKeyIdSection is not null
-                        && acsSection.TryGetSection("AccessKeySecret", out var accessKeySecretSection)
-                        && accessKeySecretSection is not null)
+                    if (configuration.TryGetSection("Auth:ACS", out var acsSection))   //阿里云ACS认证信息
                     {
-                        options.WithAliyunACS(regionIdSection.Value, accessKeyIdSection.Value, accessKeySecretSection.Value);
-                        return;
+                        if (acsSection.TryGetSection("RegionId", out var regionIdSection)
+                            && regionIdSection is not null
+                            && acsSection.TryGetSection("AccessKeyId", out var accessKeyIdSection)
+                            && accessKeyIdSection is not null
+                            && acsSection.TryGetSection("AccessKeySecret", out var accessKeySecretSection)
+                            && accessKeySecretSection is not null)
+                        {
+                            options.WithAliyunACS(regionIdSection.Value, accessKeyIdSection.Value, accessKeySecretSection.Value);
+                            return;
+                        }
                     }
+                    throw new ArgumentException("Auth:ACS 未正确设置");
                 }
-                throw new ArgumentException("Auth:ACS 未正确设置");
+                //其他情况为普通endpoint，仍然使用nacos账号进行登录
             }
-            else if (configuration.TryGetSection("Auth:User", out var userSection))  //Nacos登录信息
+
+            if (configuration.TryGetSection("Auth:User", out var userSection))  //Nacos登录信息
             {
                 if (userSection.TryGetSection("Account", out var accountSection)
                     ^ userSection.TryGetSection("Password", out var passwordSection))

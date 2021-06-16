@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.Configuration
 
         internal static INacosConfigurationClient CreateHttpConfigurationClient(NacosConfigurationSourceOptions options)
         {
-            IServerAddressAccessor serverAddressAccessor = options.Servers.TryGetAcmServerUris(out var serverUris)
+            IServerAddressAccessor serverAddressAccessor = options.Servers.TryGetEndpointServerUris(out var serverUris)
                                                                 ? new RemoteServerAddressAccessor(serverUris.First().HttpUri, options.LoggerFactory?.CreateLogger<RemoteServerAddressAccessor>())
                                                                 : new FixedServerAddressAccessor(options.Servers.ToArray());
 

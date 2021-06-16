@@ -11,6 +11,7 @@ namespace Nacos
         #region Private 字段
 
         private readonly bool _isAliyunAcm;
+        private readonly bool _isEndpoint;
         private Uri? _grpcUri;
         private Uri? _httpUri;
 
@@ -58,12 +59,13 @@ namespace Nacos
         #region Private 构造函数
 
         /// <inheritdoc cref="ServerUri"/>
-        public ServerUri(Uri acmServerListUri)
+        public ServerUri(Uri endpointUri, bool isAliyunAcm)
         {
-            _httpUri = acmServerListUri;
-            _isAliyunAcm = true;
-            Host = acmServerListUri.Host;
-            Scheme = acmServerListUri.Scheme;
+            _httpUri = endpointUri;
+            _isEndpoint = true;
+            _isAliyunAcm = isAliyunAcm;
+            Host = endpointUri.Host;
+            Scheme = endpointUri.Scheme;
         }
 
         /// <inheritdoc cref="ServerUri"/>
@@ -104,24 +106,31 @@ namespace Nacos
 
             var uriScheme = uri.Scheme.ToLowerInvariant();
 
-            if (uriScheme.Contains("acm", StringComparison.Ordinal))
+            if (uriScheme.Contains("endpoint", StringComparison.Ordinal))
             {
                 var uriBuilder = new UriBuilder(uri)
                 {
                     Scheme = GetScheme(uriScheme)
                 };
 
-                if (uriBuilder.Port == -1)
+                if (uriScheme.Contains("acm", StringComparison.Ordinal))
                 {
-                    uriBuilder.Port = 8080;
+                    if (uriBuilder.Port == -1)
+                    {
+                        uriBuilder.Port = 8080;
+                    }
+                    if (string.IsNullOrWhiteSpace(uriBuilder.Path)
+                        || uriBuilder.Path.Length == 1)
+                    {
+                        uriBuilder.Path = "/nacos/serverlist";
+                    }
+                    var acmServerListUri = uriBuilder.Uri;
+                    return new ServerUri(acmServerListUri, true);
                 }
-                if (string.IsNullOrWhiteSpace(uriBuilder.Path)
-                    || uriBuilder.Path.Length == 1)
+                else
                 {
-                    uriBuilder.Path = "/nacos/serverlist";
+                    return new ServerUri(uriBuilder.Uri, false);
                 }
-                var acmServerListUri = uriBuilder.Uri;
-                return new ServerUri(acmServerListUri);
             }
             else if (uriScheme.Contains("grpc", StringComparison.Ordinal))
             {
@@ -163,6 +172,12 @@ namespace Nacos
         /// </summary>
         /// <returns></returns>
         public bool IsAliyunAcm() => _isAliyunAcm;
+
+        /// <summary>
+        /// 是否为 Endpoint 模式
+        /// </summary>
+        /// <returns></returns>
+        public bool IsEndpoint() => _isEndpoint;
 
         /// <inheritdoc/>
         public override string ToString() => HttpUri.ToString();

@@ -8,6 +8,15 @@ namespace Nacos
     /// </summary>
     public interface INacosClient : IDisposable, IAsyncDisposable
     {
+        #region Public 属性
+
+        /// <summary>
+        /// 客户端类型
+        /// </summary>
+        NacosClientType Type { get; }
+
+        #endregion Public 属性
+
         #region Public 方法
 
         /// <summary>
