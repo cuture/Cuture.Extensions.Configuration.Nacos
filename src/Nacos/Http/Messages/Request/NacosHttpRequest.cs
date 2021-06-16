@@ -19,7 +19,10 @@ namespace Nacos.Http.Messages
 
         #endregion Public 属性
 
-        #region Private 方法
+        #region Public 方法
+
+        /// <inheritdoc/>
+        public virtual string? GetSpasSignData() => string.Empty;
 
         /// <summary>
         /// 获取等价的<see cref="HttpRequestMessage"/>
@@ -27,13 +30,6 @@ namespace Nacos.Http.Messages
         /// <param name="uri"></param>
         /// <returns></returns>
         public abstract HttpRequestMessage ToHttpRequestMessage(ServerUri uri);
-
-        #endregion Private 方法
-
-        #region Public 方法
-
-        /// <inheritdoc/>
-        public virtual string? GetSpasSignData() => string.Empty;
 
         #endregion Public 方法
 
@@ -55,6 +51,20 @@ namespace Nacos.Http.Messages
                             : $"?{query}";
 
             return new UriBuilder(uri.Scheme, uri.Host, uri.HttpPort, path, query).Uri;
+        }
+
+        /// <summary>
+        /// 加载headers到http请求中
+        /// </summary>
+        /// <param name="requestMessage"></param>
+        protected HttpRequestMessage LoadRequestHeaders(HttpRequestMessage requestMessage)
+        {
+            foreach (var item in Headers)
+            {
+                requestMessage.Headers.TryAddWithoutValidation(item.Key, item.Value);
+            }
+
+            return requestMessage;
         }
 
         #endregion Protected 方法

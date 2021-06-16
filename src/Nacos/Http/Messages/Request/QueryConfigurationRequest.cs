@@ -46,11 +46,8 @@ namespace Nacos.Http.Messages
             //HACK UrlEncode？
             var query = $"tenant={Namespace}&dataId={DataId}&group={Group}";
             var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, MakeUri(uri, "nacos/v1/cs/configs", query));
-            foreach (var item in Headers)
-            {
-                httpRequestMessage.Headers.TryAddWithoutValidation(item.Key, item.Value);
-            }
-            return httpRequestMessage;
+
+            return LoadRequestHeaders(httpRequestMessage);
         }
 
         #endregion Public 方法

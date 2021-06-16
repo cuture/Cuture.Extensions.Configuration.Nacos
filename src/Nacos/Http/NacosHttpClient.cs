@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -196,14 +197,25 @@ namespace Nacos.Http
         private void PrepareRequest(HttpRequestMessage httpRequest)
         {
             var uriBuilder = new UriBuilder(httpRequest.RequestUri!);
-            if (string.IsNullOrWhiteSpace(uriBuilder.Query))
+
+            var queryBuilder = new StringBuilder(uriBuilder.Query, 512);
+
+            var accessToken = _accessTokenService.AccessToken;
+
+            if (!string.IsNullOrWhiteSpace(accessToken))
             {
-                uriBuilder.Query = $"?{Constants.Headers.ACCESS_TOKEN}={_accessTokenService.AccessToken}";
+                if (queryBuilder.Length == 0)
+                {
+                    queryBuilder.Append('?');
+                }
+                else
+                {
+                    queryBuilder.Append('&');
+                }
+                queryBuilder.Append($"{Constants.Headers.ACCESS_TOKEN}={accessToken}");
             }
-            else
-            {
-                uriBuilder.Query = $"{uriBuilder.Query}&{Constants.Headers.ACCESS_TOKEN}={_accessTokenService.AccessToken}";
-            }
+
+            uriBuilder.Query = queryBuilder.ToString();
 
             httpRequest.RequestUri = uriBuilder.Uri;
         }

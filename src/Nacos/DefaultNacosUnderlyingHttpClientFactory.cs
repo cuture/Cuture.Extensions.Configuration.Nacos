@@ -59,11 +59,15 @@ namespace Nacos
                 throw new ObjectDisposedException(nameof(DefaultNacosUnderlyingHttpClientFactory));
             }
 
-            return new CountingNacosHttpClient(_httpClientHandler)
+            var client = new CountingNacosHttpClient(_httpClientHandler)
             {
                 BaseAddress = uri,
                 Timeout = Timeout.InfiniteTimeSpan
             };
+
+            client.DefaultRequestHeaders.TryAddWithoutValidation("Accept-Charset", "UTF-8");
+
+            return client;
         }
 
         #endregion Public 方法

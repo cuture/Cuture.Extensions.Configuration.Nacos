@@ -8,8 +8,14 @@ namespace Nacos.Http.Messages
     /// </summary>
     public class ListeningConfigurationRequest : NacosHttpRequest, INacosUniqueConfiguration
     {
+        #region Private 字段
+
         private static readonly string s_configurationSeparator = char.ConvertFromUtf32(1);
         private static readonly string s_fieldSeparator = char.ConvertFromUtf32(2);
+
+        #endregion Private 字段
+
+        #region Public 属性
 
         /// <inheritdoc/>
         public string DataId { get; set; }
@@ -30,6 +36,10 @@ namespace Nacos.Http.Messages
         /// <inheritdoc/>
         public string Namespace { get; set; }
 
+        #endregion Public 属性
+
+        #region Public 构造函数
+
         /// <inheritdoc cref="QueryConfigurationRequest"/>
         public ListeningConfigurationRequest(NacosConfigurationDescriptor descriptor, uint longPullingTimeout = 30_000)
         {
@@ -40,21 +50,32 @@ namespace Nacos.Http.Messages
             LongPullingTimeout = longPullingTimeout;
         }
 
+        #endregion Public 构造函数
+
+        #region Public 方法
+
+        /// <inheritdoc/>
+        public override string? GetSpasSignData() => $"{Namespace}+{Group}";
+
         /// <inheritdoc/>
         public string GetUniqueKey() => INacosUniqueConfiguration.GenerateUniqueKey(this);
 
         /// <inheritdoc/>
         public override HttpRequestMessage ToHttpRequestMessage(ServerUri uri)
         {
-            var message = new HttpRequestMessage(HttpMethod.Post, MakeUri(uri, "nacos/v1/cs/configs/listener", $"?tenant={Namespace}"))
+            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, MakeUri(uri, "nacos/v1/cs/configs/listener", $"?tenant={Namespace}"))
             {
                 Content = new FormUrlEncodedContent(new[] { new KeyValuePair<string?, string?>("Listening-Configs", GetFormData()) })
             };
 
-            message.Headers.TryAddWithoutValidation("Long-Pulling-Timeout", LongPullingTimeout > 0 ? LongPullingTimeout.ToString() : "30000");
+            httpRequestMessage.Headers.TryAddWithoutValidation("Long-Pulling-Timeout", LongPullingTimeout > 0 ? LongPullingTimeout.ToString() : "30000");
 
-            return message;
+            return LoadRequestHeaders(httpRequestMessage);
         }
+
+        #endregion Public 方法
+
+        #region Private 方法
 
         private string GetFormData()
         {
@@ -62,5 +83,7 @@ namespace Nacos.Http.Messages
                         ? $"{DataId}{s_fieldSeparator}{Group}{s_fieldSeparator}{Hash}{s_configurationSeparator}"
                         : $"{DataId}{s_fieldSeparator}{Group}{s_fieldSeparator}{Hash}{s_fieldSeparator}{Namespace}{s_configurationSeparator}";
         }
+
+        #endregion Private 方法
     }
 }
