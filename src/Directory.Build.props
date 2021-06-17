@@ -11,7 +11,7 @@
   <PropertyGroup>
     <Authors>Stratos</Authors>
 
-    <RepositoryUrl>https://github.com/stratosblue/Cuture.Extensions.Configuration.Nacos.git</RepositoryUrl>
+    <RepositoryUrl>https://github.com/stratosblue/Cuture.Extensions.Configuration.Nacos</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

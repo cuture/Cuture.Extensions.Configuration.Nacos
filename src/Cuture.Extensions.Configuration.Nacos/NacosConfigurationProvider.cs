@@ -55,8 +55,21 @@ namespace Cuture.Extensions.Configuration.Nacos
             if (content is null)
             {
                 _logger?.LogDebug("Load - 强制同步获取配置 - {0}", _descriptor);
-                var configuration = GetConfigurationAsync().WaitWithoutContext();
-                content = configuration.Content;
+                try
+                {
+                    var configuration = GetConfigurationAsync().WaitWithoutContext();
+                    content = configuration.Content;
+                }
+                catch (ConfigurationNotFoundException)
+                {
+                    if (_descriptor.Optional)
+                    {
+                        _logger?.LogDebug("Load - 没有找到配置 - {0}", _descriptor);
+                        LoadConfiguration(null);
+                        return;
+                    }
+                    throw;
+                }
             }
             LoadConfiguration(content);
         }
