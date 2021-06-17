@@ -132,6 +132,7 @@ namespace Nacos.Http
             CheckDisposed();
             CheckInitiated();
 
+            Exception? exception = null;
             for (int i = 0; i < _serverAddressAccessor.Count || i < 3; i++)
             {
                 var server = _serverAddressAccessor.CurrentAddress;
@@ -151,13 +152,19 @@ namespace Nacos.Http
 
                     Logger?.LogDebug("Server: {0} , 请求 {1} 响应 - Code: {2} ", server, request, response.StatusCode);
 
-                    return response.StatusCode switch
+                    if (response.StatusCode == HttpStatusCode.OK)
                     {
-                        HttpStatusCode.OK => await response.Content.ReadAsStringAsync(token).ConfigureAwait(false),
-                        HttpStatusCode.Forbidden => throw new ForbiddenException($"访问被禁止 - Request: {request} Response: {response}"),
-                        HttpStatusCode.NotFound => throw new HttpRequestNotFoundException($"无法找到资源", request),
-                        _ => throw new NacosException($"请求未正确返回 - Request: {request} - 响应Code: {response.StatusCode}"),
-                    };
+                        return await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        exception = response.StatusCode switch
+                        {
+                            HttpStatusCode.Forbidden => new ForbiddenException($"访问被禁止 - Request: {request} Response: {response}"),
+                            HttpStatusCode.NotFound => new HttpRequestNotFoundException("无法找到资源", request),
+                            _ => throw new NacosException($"请求未正确返回 - Request: {request} - 响应Code: {response.StatusCode}"),
+                        };
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -167,7 +174,7 @@ namespace Nacos.Http
                 }
             }
 
-            throw new NacosException($"请求Nacos失败 - 已尝试所有服务地址 Request: {request}");
+            throw exception ?? new NacosException($"请求Nacos失败 - 已尝试所有服务地址 Request: {request}");
         }
 
         #endregion ExecuteRequest
