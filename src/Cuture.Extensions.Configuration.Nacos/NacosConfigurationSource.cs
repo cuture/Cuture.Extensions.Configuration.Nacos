@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-using Cuture.Extensions.Configuration.Nacos;
-
 using Microsoft.Extensions.Configuration;
 
-namespace Nacos
+namespace Cuture.Extensions.Configuration.Nacos
 {
     /// <summary>
     /// Nacos配置源

@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Cuture.Extensions.Configuration.Nacos;
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
+using Nacos;
+using Nacos.Exceptions;
 using Nacos.Utils;
 
-namespace Nacos
+namespace Cuture.Extensions.Configuration.Nacos
 {
     /// <summary>
     /// nacos配置提供器

@@ -1,4 +1,4 @@
-﻿namespace Nacos
+﻿namespace Nacos.Exceptions
 {
     /// <summary>
     /// 访问被拒绝

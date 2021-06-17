@@ -1,4 +1,4 @@
-﻿namespace Nacos
+﻿namespace Nacos.Exceptions
 {
     /// <summary>
     /// 没有找到配置

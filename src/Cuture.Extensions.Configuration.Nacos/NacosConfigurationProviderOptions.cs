@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 
 using Nacos;
+using Nacos.Exceptions;
 
 namespace Cuture.Extensions.Configuration.Nacos
 {

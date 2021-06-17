@@ -1,7 +1,7 @@
 ﻿<Project>
   <PropertyGroup>
     <VersionPrefix>1.0.0</VersionPrefix>
-    <VersionSuffix>alpha-0002</VersionSuffix>
+    <VersionSuffix>alpha-0003</VersionSuffix>
 
     <IsPackable>true</IsPackable>
 

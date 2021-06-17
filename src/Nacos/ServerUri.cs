@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
+using Nacos.Exceptions;
+
 namespace Nacos
 {
     /// <summary>

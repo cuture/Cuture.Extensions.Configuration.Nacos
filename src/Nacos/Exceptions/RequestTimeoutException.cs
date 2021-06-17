@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Nacos
+namespace Nacos.Exceptions
 {
     /// <summary>
     /// 请求超时

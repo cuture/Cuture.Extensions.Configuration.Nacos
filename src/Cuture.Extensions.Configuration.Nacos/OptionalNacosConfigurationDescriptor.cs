@@ -1,4 +1,6 @@
-﻿namespace Nacos
+﻿using Nacos;
+
+namespace Cuture.Extensions.Configuration.Nacos
 {
     /// <summary>
     /// 有可选属性的 <see cref="NacosConfigurationDescriptor"/>

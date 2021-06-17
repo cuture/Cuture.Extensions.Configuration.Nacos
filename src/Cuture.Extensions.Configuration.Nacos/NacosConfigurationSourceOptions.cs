@@ -5,7 +5,9 @@ using System.Net;
 
 using Microsoft.Extensions.Logging;
 
-namespace Nacos
+using Nacos;
+
+namespace Cuture.Extensions.Configuration.Nacos
 {
     /// <summary>
     /// Nacos配置源选项

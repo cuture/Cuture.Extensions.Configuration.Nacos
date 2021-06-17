@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using Nacos.Exceptions;
 using Nacos.Http.Messages;
 
 namespace Nacos.Http

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using Nacos.Exceptions;
 using Nacos.Grpc.Messages;
 
 namespace Nacos.Grpc

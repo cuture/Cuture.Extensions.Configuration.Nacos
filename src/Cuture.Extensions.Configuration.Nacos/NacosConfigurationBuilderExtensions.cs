@@ -10,6 +10,7 @@ using Cuture.Extensions.Configuration.Nacos;
 using Microsoft.Extensions.Logging;
 
 using Nacos;
+using Nacos.Exceptions;
 
 namespace Microsoft.Extensions.Configuration
 {

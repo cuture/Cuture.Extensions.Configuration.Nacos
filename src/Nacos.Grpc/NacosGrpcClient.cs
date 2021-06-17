@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using Nacos.Exceptions;
 using Nacos.Grpc.GrpcService;
 using Nacos.Grpc.Messages;
 using Nacos.Internal;

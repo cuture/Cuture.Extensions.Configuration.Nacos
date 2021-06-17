@@ -6,6 +6,7 @@ using System.Text.Json;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
+using Nacos.Exceptions;
 using Nacos.Grpc.GrpcService;
 using Nacos.Grpc.Messages;
 
