@@ -132,7 +132,9 @@ namespace Nacos.Http
             CheckDisposed();
             CheckInitiated();
 
-            Exception? exception = null;
+            HttpResponseMessage? response = null;
+            bool isAccessTokenRefreshed = false;
+
             for (int i = 0; i < _serverAddressAccessor.Count || i < 3; i++)
             {
                 var server = _serverAddressAccessor.CurrentAddress;
@@ -148,7 +150,7 @@ namespace Nacos.Http
 
                     PrepareRequest(httpRequest);
 
-                    var response = await client.SendAsync(httpRequest, cancellationToken: token).ConfigureAwait(false);
+                    response = await client.SendAsync(httpRequest, cancellationToken: token).ConfigureAwait(false);
 
                     Logger?.LogDebug("Server: {0} , 请求 {1} 响应 - Code: {2} ", server, request, response.StatusCode);
 
@@ -156,25 +158,40 @@ namespace Nacos.Http
                     {
                         return await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
                     }
-                    else
-                    {
-                        exception = response.StatusCode switch
-                        {
-                            HttpStatusCode.Forbidden => new ForbiddenException($"访问被禁止 - Request: {request} Response: {response}"),
-                            HttpStatusCode.NotFound => new HttpRequestNotFoundException("无法找到资源", request),
-                            _ => throw new NacosException($"请求未正确返回 - Request: {request} - 响应Code: {response.StatusCode}"),
-                        };
-                    }
                 }
                 catch (Exception ex)
                 {
                     Logger?.LogError(ex, "请求执行失败 {0} - TargetServer: {1}", request, server);
 
                     _serverAddressAccessor.MoveNextAddress();
+
+                    continue;
+                }
+
+                if (response.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    //访问受限，尝试刷新一次Token
+                    if (!isAccessTokenRefreshed)
+                    {
+                        await _accessTokenService.RefreshAccessTokenAsync().ConfigureAwait(false);
+                        isAccessTokenRefreshed = true;
+                    }
+                    else
+                    {
+                        throw new ForbiddenException($"访问被禁止 - Request: {request} Response: {response}");
+                    }
+                }
+                else if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    throw new HttpRequestNotFoundException("无法找到资源", request);
+                }
+                else
+                {
+                    Logger?.LogError("请求未正确返回 - Request: {0} - 响应Code: {1} - TargetServer: {2}", request, response.StatusCode, server);
                 }
             }
 
-            throw exception ?? new NacosException($"请求Nacos失败 - 已尝试所有服务地址 Request: {request}");
+            throw new NacosException($"请求Nacos失败 - 已尝试所有服务地址 Request: {request}");
         }
 
         #endregion ExecuteRequest

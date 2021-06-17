@@ -228,6 +228,7 @@ namespace Nacos.Grpc
                     case NacosErrorCode.Forbidden:
                         throw new ForbiddenException($"访问被禁止 - Request: {request} Response: {response}");
                     case NacosErrorCode.ConnectionUnRegistered:
+                        //TODO 尝试刷新Token
                         throw new ConnectionUnRegisteredException($"请求使用的连接未注册 - Request: {request} Response: {response}");
                     default:
                         throw new NacosException($"未知的错误码 - Request: {request} Response: {response}");
