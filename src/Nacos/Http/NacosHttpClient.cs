@@ -72,7 +72,7 @@ namespace Nacos.Http
                                     ? new NullRequestSigner()
                                     : new ACMRequestSigner(clientOptions.AcsProfile.AccessKeyId, clientOptions.AcsProfile.AccessKeySecret);
 
-            _runningTokenSource = new CancellationTokenSource();
+            _runningTokenSource = new();
             RunningToken = _runningTokenSource.Token;
         }
 

@@ -42,14 +42,16 @@ namespace Microsoft.Extensions.Configuration
                                                             ? new AutomaticHostAddressAccessor(options.ClientIPSubnet)
                                                             : new FixedHostAddressAccessor(options.SpecifyClientIP);
 
-            var clientOptions = new NacosGrpcClientOptions(clientName: $"NacosGrpcClient-{Guid.NewGuid():n}",
-                                                           serverAddressAccessor: serverAddressAccessor,
-                                                           hostAddressAccessor: hostAddressAccessor)
+            var clientOptions = new NacosGrpcConfigurationClientOptions(clientName: $"NacosGrpcConfigurationClient-{Guid.NewGuid():n}",
+                                                                        serverAddressAccessor: serverAddressAccessor,
+                                                                        hostAddressAccessor: hostAddressAccessor)
             {
                 LoggerFactory = options.LoggerFactory,
                 User = options.User,
                 AcsProfile = options.AcsProfile,
             };
+
+            clientOptions.ConfigurationClientMiddlewares.AddRange(options.ConfigurationClientMiddlewares);
 
             return new NacosConfigurationGrpcClient(clientOptions);
         }

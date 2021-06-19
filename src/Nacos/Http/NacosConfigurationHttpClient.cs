@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Nacos.Exceptions;
 using Nacos.Http.Messages;
 using Nacos.Internal;
+using Nacos.Middleware;
 using Nacos.Utils;
 
 namespace Nacos.Http
@@ -16,11 +17,22 @@ namespace Nacos.Http
     /// </summary>
     public sealed class NacosConfigurationHttpClient : NacosHttpClient, INacosConfigurationClient
     {
+        #region Private 字段
+
+        private readonly Func<ConfigurationGetContext, Task<NacosConfigurationDescriptor>> _getConfigurationDelegate;
+
+        #endregion Private 字段
+
         #region Public 构造函数
 
         /// <inheritdoc cref="NacosConfigurationHttpClient"/>
-        public NacosConfigurationHttpClient(NacosHttpClientOptions clientOptions) : base(clientOptions)
+        public NacosConfigurationHttpClient(NacosHttpConfigurationClientOptions clientOptions) : base(clientOptions)
         {
+            var middlewares = clientOptions.ConfigurationClientMiddlewares;
+            _getConfigurationDelegate = middlewares.BuildGetConfigurationDelegateWithAliyunKMSDecrypt(acsProfile: clientOptions.AcsProfile,
+                                                                                                      loggerFactory: clientOptions.LoggerFactory,
+                                                                                                      httpClientFactory: clientOptions.HttpClientFactory,
+                                                                                                      endpointDelegate: context => InternalGetConfigurationAsync(context.Descriptor, context.CancellationToken));
         }
 
         #endregion Public 构造函数
@@ -28,18 +40,9 @@ namespace Nacos.Http
         #region Public 方法
 
         /// <inheritdoc/>
-        public async Task<NacosConfigurationDescriptor> GetConfigurationAsync(NacosConfigurationDescriptor descriptor, CancellationToken token = default)
+        public Task<NacosConfigurationDescriptor> GetConfigurationAsync(NacosConfigurationDescriptor descriptor, CancellationToken token = default)
         {
-            var request = new QueryConfigurationRequest(descriptor);
-            try
-            {
-                var content = await RequestAsync(request, token).ConfigureAwait(false);
-                return descriptor.WithContent(content);
-            }
-            catch (HttpRequestNotFoundException)
-            {
-                throw new ConfigurationNotFoundException(descriptor);
-            }
+            return _getConfigurationDelegate(new(this, descriptor, token));
         }
 
         /// <inheritdoc/>
@@ -71,6 +74,20 @@ namespace Nacos.Http
 
         #region Private 方法
 
+        private async Task<NacosConfigurationDescriptor> InternalGetConfigurationAsync(NacosConfigurationDescriptor descriptor, CancellationToken token)
+        {
+            var request = new QueryConfigurationRequest(descriptor);
+            try
+            {
+                var content = await RequestAsync(request, token).ConfigureAwait(false);
+                return descriptor.WithContent(content, HashUtil.ComputeMD5(content).ToHexString());
+            }
+            catch (HttpRequestNotFoundException)
+            {
+                throw new ConfigurationNotFoundException(descriptor);
+            }
+        }
+
         private async Task PollingListeningConfigurationAsync(NacosConfigurationDescriptor descriptor, ConfigurationChangeNotifyCallback notifyCallback, CancellationToken token)
         {
             var scaler = new Scaler(0, 10, 60);
@@ -88,11 +105,11 @@ namespace Nacos.Http
                     if (!string.IsNullOrWhiteSpace(response))
                     {
                         //HACK 响应值是否有内容？
-                        var newDescriptor = await GetConfigurationAsync(descriptor, RunningToken).ConfigureAwait(false);
+                        var newDescriptor = await GetConfigurationAsync(descriptor, token).ConfigureAwait(false);
 
                         await notifyCallback(newDescriptor, token).ConfigureAwait(false);
 
-                        descriptor = descriptor.WithContent(newDescriptor.Content, HashUtil.ComputeMD5(newDescriptor.Content).ToHexString());
+                        descriptor = descriptor.WithContent(newDescriptor.Content, newDescriptor.Hash ?? HashUtil.ComputeMD5(newDescriptor.Content).ToHexString());
                     }
 
                     scaler.Reset();

@@ -35,12 +35,14 @@ namespace Microsoft.Extensions.Configuration
                                                                 ? new RemoteServerAddressAccessor(serverUris.First().HttpUri, options.LoggerFactory?.CreateLogger<RemoteServerAddressAccessor>())
                                                                 : new FixedServerAddressAccessor(options.Servers.ToArray());
 
-            var clientOptions = new NacosHttpClientOptions($"NacosHttpClient-{Guid.NewGuid():n}", serverAddressAccessor)
+            var clientOptions = new NacosHttpConfigurationClientOptions($"NacosHttpConfigurationClient-{Guid.NewGuid():n}", serverAddressAccessor)
             {
                 LoggerFactory = options.LoggerFactory,
                 User = options.User,
                 AcsProfile = options.AcsProfile,
             };
+
+            clientOptions.ConfigurationClientMiddlewares.AddRange(options.ConfigurationClientMiddlewares);
 
             return new NacosConfigurationHttpClient(clientOptions);
         }

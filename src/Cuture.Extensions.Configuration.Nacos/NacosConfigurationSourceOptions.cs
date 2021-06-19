@@ -6,6 +6,7 @@ using System.Net;
 using Microsoft.Extensions.Logging;
 
 using Nacos;
+using Nacos.Middleware;
 
 namespace Cuture.Extensions.Configuration.Nacos
 {
@@ -30,6 +31,11 @@ namespace Cuture.Extensions.Configuration.Nacos
         /// <para/> 优先级：<see cref="SpecifyClientIP"/> > <see cref="ClientIPSubnet"/>
         /// </summary>
         public string? ClientIPSubnet { get; set; }
+
+        /// <summary>
+        /// Nacos配置客户端的中间件列表
+        /// </summary>
+        public List<INacosConfigurationClientMiddleware> ConfigurationClientMiddlewares { get; } = new();
 
         /// <summary>
         /// 配置解析器列表（列表顺序对应解析优先级）

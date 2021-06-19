@@ -72,9 +72,19 @@ namespace Nacos
         /// 以当前对象为基础，新建一个 <see cref="NacosConfigurationDescriptor"/> 并为其设置内容
         /// </summary>
         /// <param name="content"></param>
+        /// <returns></returns>
+        public NacosConfigurationDescriptor WithContent(string? content)
+        {
+            return new NacosConfigurationDescriptor(Namespace, DataId, Group, content, Hash);
+        }
+
+        /// <summary>
+        /// 以当前对象为基础，新建一个 <see cref="NacosConfigurationDescriptor"/> 并为其设置内容
+        /// </summary>
+        /// <param name="content"></param>
         /// <param name="hash"></param>
         /// <returns></returns>
-        public NacosConfigurationDescriptor WithContent(string? content, string? hash = null)
+        public NacosConfigurationDescriptor WithContent(string? content, string? hash)
         {
             return new NacosConfigurationDescriptor(Namespace, DataId, Group, content, hash);
         }

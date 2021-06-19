@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 
 using Nacos.Exceptions;
 using Nacos.Grpc.Messages;
+using Nacos.Middleware;
 
 namespace Nacos.Grpc
 {
@@ -19,6 +20,7 @@ namespace Nacos.Grpc
     {
         #region Private 字段
 
+        private readonly Func<ConfigurationGetContext, Task<NacosConfigurationDescriptor>> _getConfigurationDelegate;
         private readonly Dictionary<INacosUniqueConfiguration, ConfigurationSubscribeState> _notifyCallbacks = new(new INacosUniqueConfigurationEqualityComparer());
 
         #endregion Private 字段
@@ -26,8 +28,13 @@ namespace Nacos.Grpc
         #region Public 构造函数
 
         /// <inheritdoc cref="NacosConfigurationGrpcClient"/>
-        public NacosConfigurationGrpcClient(NacosGrpcClientOptions clientOptions) : base(clientOptions)
+        public NacosConfigurationGrpcClient(NacosGrpcConfigurationClientOptions clientOptions) : base(clientOptions)
         {
+            var middlewares = clientOptions.ConfigurationClientMiddlewares;
+            _getConfigurationDelegate = middlewares.BuildGetConfigurationDelegateWithAliyunKMSDecrypt(acsProfile: clientOptions.AcsProfile,
+                                                                                                      loggerFactory: clientOptions.LoggerFactory,
+                                                                                                      httpClientFactory: clientOptions.HttpClientFactory,
+                                                                                                      endpointDelegate: context => InternalGetConfigurationAsync(context.Descriptor, context.CancellationToken));
         }
 
         #endregion Public 构造函数
@@ -35,22 +42,12 @@ namespace Nacos.Grpc
         #region Public 方法
 
         /// <inheritdoc/>
-        public async Task<NacosConfigurationDescriptor> GetConfigurationAsync(NacosConfigurationDescriptor descriptor, CancellationToken token = default)
+        public Task<NacosConfigurationDescriptor> GetConfigurationAsync(NacosConfigurationDescriptor descriptor, CancellationToken token = default)
         {
             CheckInitiated();
             CheckDisposed();
 
-            var request = new ConfigQueryRequest(descriptor);
-            request.Headers.Add("notify", "false");
-
-            var response = await RequestAsync<ConfigQueryResponse>(request, token).ConfigureAwait(false);
-
-            if (response.ErrorCode == NacosErrorCode.ConfigurationNotFound)
-            {
-                throw new ConfigurationNotFoundException(descriptor);
-            }
-
-            return descriptor.WithContent(response.Content, response.Md5);
+            return _getConfigurationDelegate(new(this, descriptor, token));
         }
 
         /// <inheritdoc/>
@@ -132,6 +129,21 @@ namespace Nacos.Grpc
         #endregion Protected 方法
 
         #region Private 方法
+
+        private async Task<NacosConfigurationDescriptor> InternalGetConfigurationAsync(NacosConfigurationDescriptor descriptor, CancellationToken token)
+        {
+            var request = new ConfigQueryRequest(descriptor);
+            request.Headers.Add("notify", "false");
+
+            var response = await RequestAsync<ConfigQueryResponse>(request, token).ConfigureAwait(false);
+
+            if (response.ErrorCode == NacosErrorCode.ConfigurationNotFound)
+            {
+                throw new ConfigurationNotFoundException(descriptor);
+            }
+
+            return descriptor.WithContent(response.Content, response.Md5);
+        }
 
         private async Task<NacosResponse?> InternalSubscribeConfigurationChangeAsync(NacosConfigurationDescriptor descriptor, CancellationToken token)
         {

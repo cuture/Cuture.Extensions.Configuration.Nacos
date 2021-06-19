@@ -8,7 +8,9 @@
         #region Public 构造函数
 
         /// <inheritdoc cref="NacosHttpClientOptions"/>
-        public NacosHttpClientOptions(string clientName, IServerAddressAccessor serverAddressAccessor, INacosUnderlyingHttpClientFactory? httpClientFactory = null)
+        public NacosHttpClientOptions(string clientName,
+                                      IServerAddressAccessor serverAddressAccessor,
+                                      INacosUnderlyingHttpClientFactory? httpClientFactory = null)
             : base(clientName, serverAddressAccessor, httpClientFactory)
         {
         }
