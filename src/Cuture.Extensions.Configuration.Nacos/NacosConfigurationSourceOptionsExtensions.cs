@@ -51,6 +51,8 @@ namespace Microsoft.Extensions.Configuration
 
         #region Public 方法
 
+        #region AddServerAddress
+
         /// <summary>
         /// 添加服务地址
         /// </summary>
@@ -59,8 +61,18 @@ namespace Microsoft.Extensions.Configuration
         /// <returns></returns>
         public static NacosConfigurationSourceOptions AddServerAddress(this NacosConfigurationSourceOptions options, string url)
         {
-            options.Servers.Add(ServerUri.Parse(url));
-            return options;
+            return options.AddServerAddress(ServerUri.Parse(url));
+        }
+
+        /// <summary>
+        /// 添加服务地址
+        /// </summary>
+        /// <param name="options"></param>
+        /// <param name="uri"></param>
+        /// <returns></returns>
+        public static NacosConfigurationSourceOptions AddServerAddress(this NacosConfigurationSourceOptions options, Uri uri)
+        {
+            return options.AddServerAddress(ServerUri.Parse(uri));
         }
 
         /// <summary>
@@ -79,6 +91,28 @@ namespace Microsoft.Extensions.Configuration
         /// 添加服务地址
         /// </summary>
         /// <param name="options"></param>
+        /// <param name="urls"></param>
+        /// <returns></returns>
+        public static NacosConfigurationSourceOptions AddServerAddress(this NacosConfigurationSourceOptions options, IEnumerable<string> urls)
+        {
+            return options.AddServerAddress(urls.Select(ServerUri.Parse));
+        }
+
+        /// <summary>
+        /// 添加服务地址
+        /// </summary>
+        /// <param name="options"></param>
+        /// <param name="uris"></param>
+        /// <returns></returns>
+        public static NacosConfigurationSourceOptions AddServerAddress(this NacosConfigurationSourceOptions options, IEnumerable<Uri> uris)
+        {
+            return options.AddServerAddress(uris.Select(ServerUri.Parse));
+        }
+
+        /// <summary>
+        /// 添加服务地址
+        /// </summary>
+        /// <param name="options"></param>
         /// <param name="uris"></param>
         /// <returns></returns>
         public static NacosConfigurationSourceOptions AddServerAddress(this NacosConfigurationSourceOptions options, IEnumerable<ServerUri> uris)
@@ -86,6 +120,8 @@ namespace Microsoft.Extensions.Configuration
             options.Servers.AddRange(uris);
             return options;
         }
+
+        #endregion AddServerAddress
 
         /// <summary>
         /// 使用 LoggerFactory
