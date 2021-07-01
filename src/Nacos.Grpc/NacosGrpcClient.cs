@@ -401,12 +401,7 @@ namespace Nacos.Grpc
                 return;
             }
 
-            try
-            {
-                _connectionTokenSource?.Cancel(true);
-                _connectionTokenSource?.Dispose();
-            }
-            catch { }
+            _connectionTokenSource.SilenceRelease();
 
             _ = Task.Run(async () =>
             {
@@ -525,8 +520,7 @@ namespace Nacos.Grpc
 
             void DisposeConnectionTokenSource()
             {
-                connectionTokenSource.Cancel(true);
-                connectionTokenSource.Dispose();
+                connectionTokenSource.SilenceRelease();
             }
         }
 
@@ -634,11 +628,9 @@ namespace Nacos.Grpc
             {
                 _disposedValue = true;
 
-                _connectionTokenSource?.Cancel(true);
-                _connectionTokenSource?.Dispose();
+                _connectionTokenSource.SilenceRelease();
 
-                _runningTokenSource.Cancel(true);
-                _runningTokenSource.Dispose();
+                _runningTokenSource.SilenceRelease();
             }
         }
 

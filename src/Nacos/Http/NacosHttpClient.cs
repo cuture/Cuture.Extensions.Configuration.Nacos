@@ -284,8 +284,7 @@ namespace Nacos.Http
             {
                 _disposedValue = true;
 
-                _runningTokenSource.Cancel(true);
-                _runningTokenSource.Dispose();
+                _runningTokenSource.SilenceRelease();
             }
         }
 

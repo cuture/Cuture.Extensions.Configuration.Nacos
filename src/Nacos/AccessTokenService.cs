@@ -42,8 +42,7 @@ namespace Nacos
                 var existValue = Interlocked.Exchange(ref _autoRefreshTokenSource, value);
                 if (existValue is not null)
                 {
-                    existValue.Cancel(true);
-                    existValue.Dispose();
+                    existValue.SilenceRelease();
                 }
             }
         }
@@ -246,8 +245,7 @@ namespace Nacos
 
                 AutoRefreshTokenSource = null!;
 
-                _runningTokenSource.Cancel(true);
-                _runningTokenSource.Dispose();
+                _runningTokenSource.SilenceRelease();
             }
         }
 

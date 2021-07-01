@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Nacos\Internal\CancellationTokenSourceExtensions.cs" Link="Internal\CancellationTokenSourceExtensions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\Nacos.Grpc\**\*.cs" Exclude="..\Nacos.Grpc\obj\**\*" Link="Nacos.Grpc\%(RecursiveDir)%(FileName)%(Extension)" />
   </ItemGroup>
 

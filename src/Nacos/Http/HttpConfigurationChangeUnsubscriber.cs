@@ -30,8 +30,7 @@ namespace Nacos.Http
         {
             if (Interlocked.Exchange(ref _tokenSource, null!) is CancellationTokenSource tokenSource)
             {
-                tokenSource.Cancel(true);
-                tokenSource.Dispose();
+                tokenSource.SilenceRelease();
             }
             return ValueTask.CompletedTask;
         }

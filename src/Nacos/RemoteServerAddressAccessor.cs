@@ -84,8 +84,7 @@ namespace Nacos
                 return;
             }
             _isDisposed = true;
-            _runningCts.Cancel(true);
-            _runningCts.Dispose();
+            _runningCts.SilenceRelease();
 
             GC.SuppressFinalize(this);
         }

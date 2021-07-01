@@ -98,8 +98,7 @@ namespace Nacos
             if (!_disposedValue)
             {
                 _disposedValue = true;
-                _runningTokenSource.Cancel(true);
-                _runningTokenSource.Dispose();
+                _runningTokenSource.SilenceRelease();
 
                 _httpClientHandler.MakeDisposeReady();
             }
