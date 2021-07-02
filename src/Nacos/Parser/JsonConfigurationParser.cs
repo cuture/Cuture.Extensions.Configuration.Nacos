@@ -10,6 +10,16 @@ namespace Nacos
     /// </summary>
     public class JsonConfigurationParser : IConfigurationParser
     {
+        #region Private 字段
+
+        private static readonly JsonReaderOptions s_jsonReaderOptions = new()
+        {
+            AllowTrailingCommas = true,
+            CommentHandling = JsonCommentHandling.Skip,
+        };
+
+        #endregion Private 字段
+
         #region Public 方法
 
         /// <inheritdoc/>
@@ -42,7 +52,7 @@ namespace Nacos
 
         private static bool TryParseToJsonDocument(string content, out JsonDocument? document)
         {
-            var utf8JsonReader = new Utf8JsonReader(Encoding.UTF8.GetBytes(content).AsSpan());
+            var utf8JsonReader = new Utf8JsonReader(Encoding.UTF8.GetBytes(content).AsSpan(), s_jsonReaderOptions);
 
             return JsonDocument.TryParseValue(ref utf8JsonReader, out document);
         }
