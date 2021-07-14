@@ -65,5 +65,44 @@ namespace GenericHostSample
         }
 
         #endregion Private 方法
+
+        // sample test1 - Cfg1
+        //{
+        //  "Sample": {
+        //    "BoolArrayProperty": [
+        //      true,
+        //      true,
+        //      false,
+        //      true
+        //    ],
+        //    "BoolProperty": true,
+        //    "IntArrayProperty": [
+        //      0,
+        //      1,
+        //      2,
+        //      3,
+        //      4
+        //    ],
+        //    "IntProperty": "123",
+        //    "ObjectArrayProperty": [
+        //      { "Value": "PV0" },
+        //      { "Value": "PV1" },
+        //      { "Value": "PV2" },
+        //      { "Value": "PV3" }
+        //    ],
+        //    "ObjectProperty": {
+        //    "Value": "PV"
+        //    },
+        //    "StringArrayProperty": [
+        //      "0",
+        //      "1",
+        //      "2",
+        //      "3",
+        //      "4"
+        //    ],
+        //    "EAStringProperty": null,
+        //    "StringProperty": "stringdasdsadasdsa"
+        //  }
+        //}
     }
 }

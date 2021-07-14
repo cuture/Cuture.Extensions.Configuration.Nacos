@@ -34,9 +34,9 @@ namespace Nacos
         }
 
         /// <inheritdoc/>
-        public IDictionary<string, string> Parse(string content)
+        public IDictionary<string, string?> Parse(string content)
         {
-            var data = new Dictionary<string, string>();
+            var data = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
             if (TryParseToJsonDocument(content, out var document)
                 && document is not null)
             {
@@ -68,7 +68,7 @@ namespace Nacos
             return $"{path}:{section}";
         }
 
-        private void VisitJsonElement(JsonElement element, string path, Dictionary<string, string> container)
+        private void VisitJsonElement(JsonElement element, string path, Dictionary<string, string?> container)
         {
             switch (element.ValueKind)
             {
@@ -92,14 +92,17 @@ namespace Nacos
                 case JsonValueKind.Number:
                 case JsonValueKind.True:
                 case JsonValueKind.False:
-                    container.Add(path, element.GetRawText().Trim('"'));
+                case JsonValueKind.Null:
+                    if (container.ContainsKey(path))
+                    {
+                        throw new FormatException($"There has duplicated key - {path} in a json document.");
+                    }
+                    container[path] = element.ToString();
                     break;
 
                 case JsonValueKind.Undefined:
-                case JsonValueKind.Null:
                 default:
-                    container.Add(path, "null");
-                    break;
+                    throw new FormatException($"Invalid JsonElement {path}");
             }
         }
 

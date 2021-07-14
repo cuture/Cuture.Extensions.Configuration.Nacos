@@ -21,7 +21,7 @@ namespace Nacos
         /// </summary>
         /// <param name="content"></param>
         /// <returns></returns>
-        IDictionary<string, string> Parse(string content);
+        IDictionary<string, string?> Parse(string content);
 
         #endregion Public 方法
     }
