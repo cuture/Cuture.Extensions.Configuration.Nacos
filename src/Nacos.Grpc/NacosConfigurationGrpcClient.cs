@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -21,7 +20,8 @@ namespace Nacos.Grpc
         #region Private 字段
 
         private readonly Func<ConfigurationGetContext, Task<NacosConfigurationDescriptor>> _getConfigurationDelegate;
-        private readonly Dictionary<INacosUniqueConfiguration, ConfigurationSubscribeState> _notifyCallbacks = new(new INacosUniqueConfigurationEqualityComparer());
+
+        private readonly ConfigurationSubscriptionCollection _subscriptions = new();
 
         #endregion Private 字段
 
@@ -62,17 +62,7 @@ namespace Nacos.Grpc
 
             await InternalSubscribeConfigurationChangeAsync(descriptor, token).ConfigureAwait(false);
 
-            lock (_notifyCallbacks)
-            {
-                if (_notifyCallbacks.TryGetValue(descriptor, out var existSubscribeState))
-                {
-                    existSubscribeState.NotifyCallback += notifyCallback;
-                }
-                else
-                {
-                    _notifyCallbacks.Add(descriptor, new(descriptor, notifyCallback));
-                }
-            }
+            _subscriptions.AddSubscribe(descriptor, notifyCallback);
 
             return new ConfigurationChangeUnsubscriber(descriptor, notifyCallback, UnSubscribeConfigurationChange);
         }
@@ -84,10 +74,7 @@ namespace Nacos.Grpc
         /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
-            lock (_notifyCallbacks)
-            {
-                _notifyCallbacks.Clear();
-            }
+            _subscriptions.Dispose();
             base.Dispose(disposing);
         }
 
@@ -96,18 +83,13 @@ namespace Nacos.Grpc
         {
             Logger?.LogInformation("连接已恢复");
 
-            ConfigurationSubscribeState[] subscribeStates;
-
-            lock (_notifyCallbacks)
-            {
-                subscribeStates = _notifyCallbacks.Values.ToArray();
-            }
+            var subscriptions = _subscriptions.GetAllSubscription();
 
             _ = Task.Run(async () =>
             {
                 try
                 {
-                    var tasks = subscribeStates.Select(subscribeState => InternalSubscribeConfigurationChangeAsync(subscribeState.Descriptor, token)).ToArray();
+                    var tasks = subscriptions.Select(subscribeState => InternalSubscribeConfigurationChangeAsync(subscribeState.Descriptor, token)).ToArray();
 
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                 }
@@ -161,21 +143,11 @@ namespace Nacos.Grpc
         /// <returns></returns>
         private async Task OnConfigurationChangeNotify(ConfigChangeNotifyRequest request)
         {
-            ConfigurationChangeNotifyCallback? notifyCallback;
-            ConfigurationSubscribeState? subscribeState;
-
-            lock (_notifyCallbacks)
-            {
-                if (!_notifyCallbacks.TryGetValue(request, out subscribeState))
-                {
-                    return;
-                }
-                notifyCallback = subscribeState.NotifyCallback;
-            }
-
-            if (notifyCallback is not null)
+            if (_subscriptions.TryGetSubscribe(request, out var subscribeState))
             {
                 Logger?.LogInformation("配置已变更 - {0}", request);
+
+                var notifyCallback = subscribeState.NotifyCallback;
 
                 //HACK 在此处捕获异常，是否合理
                 try
@@ -212,19 +184,7 @@ namespace Nacos.Grpc
 
             Logger?.LogInformation("取消配置 {0} 的变更通知订阅", configurationUniqueKey);
 
-            lock (_notifyCallbacks)
-            {
-                if (_notifyCallbacks.TryGetValue(descriptor, out var subscribeState))
-                {
-#pragma warning disable CS8601 // 引用类型赋值可能为 null。
-                    subscribeState.NotifyCallback -= notifyCallback;
-#pragma warning restore CS8601 // 引用类型赋值可能为 null。
-                    if (subscribeState.NotifyCallback is null)
-                    {
-                        _notifyCallbacks.Remove(descriptor);
-                    }
-                }
-            }
+            _subscriptions.RemoveSubscribe(descriptor, notifyCallback);
 
             var request = new ConfigBatchListenRequest(false).AddListenContext(descriptor);
 
@@ -233,34 +193,5 @@ namespace Nacos.Grpc
         }
 
         #endregion Private 方法
-
-        #region Private 类
-
-        private class ConfigurationSubscribeState
-        {
-            #region Public 字段
-
-            public ConfigurationChangeNotifyCallback NotifyCallback;
-
-            #endregion Public 字段
-
-            #region Public 属性
-
-            public NacosConfigurationDescriptor Descriptor { get; set; }
-
-            #endregion Public 属性
-
-            #region Public 构造函数
-
-            public ConfigurationSubscribeState(NacosConfigurationDescriptor descriptor, ConfigurationChangeNotifyCallback notifyCallback)
-            {
-                Descriptor = descriptor ?? throw new ArgumentNullException(nameof(descriptor));
-                NotifyCallback = notifyCallback ?? throw new ArgumentNullException(nameof(notifyCallback));
-            }
-
-            #endregion Public 构造函数
-        }
-
-        #endregion Private 类
     }
 }
