@@ -184,12 +184,13 @@ namespace Nacos.Grpc
 
             Logger?.LogInformation("取消配置 {0} 的变更通知订阅", configurationUniqueKey);
 
-            _subscriptions.RemoveSubscribe(descriptor, notifyCallback);
+            if (_subscriptions.RemoveSubscribe(descriptor, notifyCallback))
+            {
+                var request = new ConfigBatchListenRequest(false).AddListenContext(descriptor);
 
-            var request = new ConfigBatchListenRequest(false).AddListenContext(descriptor);
-
-            //HACK 此处不做检查。。。
-            await RequestAsync(request, RunningToken).ConfigureAwait(false);
+                //HACK 此处不做检查。。。
+                await RequestAsync(request, RunningToken).ConfigureAwait(false);
+            }
         }
 
         #endregion Private 方法

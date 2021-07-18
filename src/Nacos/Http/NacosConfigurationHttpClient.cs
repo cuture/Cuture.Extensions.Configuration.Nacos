@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,6 +22,10 @@ namespace Nacos.Http
         #region Private 字段
 
         private readonly Func<ConfigurationGetContext, Task<NacosConfigurationDescriptor>> _getConfigurationDelegate;
+
+        private readonly Dictionary<INacosUniqueConfiguration, CancellationTokenSource> _subscribeTokenSources = new(new INacosUniqueConfigurationEqualityComparer());
+
+        private readonly ConfigurationSubscriptionCollection _subscriptions = new();
 
         #endregion Private 字段
 
@@ -50,14 +56,31 @@ namespace Nacos.Http
                                                                         ConfigurationChangeNotifyCallback notifyCallback,
                                                                         CancellationToken token = default)
         {
-            var pollingTokenSource = CancellationTokenSource.CreateLinkedTokenSource(RunningToken);
-            pollingTokenSource.Token.Register(() => pollingTokenSource.Dispose());
+            _subscriptions.AddSubscribe(descriptor, notifyCallback);
 
-            _ = PollingListeningConfigurationAsync(descriptor, notifyCallback, pollingTokenSource.Token);
+            CancellationTokenSource? subscribeTokenSource = null;
 
-            var unsubscriber = new HttpConfigurationChangeUnsubscriber(pollingTokenSource);
+            lock (_subscribeTokenSources)
+            {
+                if (_subscribeTokenSources.TryGetValue(descriptor, out subscribeTokenSource))
+                {
+                    return Task.FromResult<IAsyncDisposable>(CreateUnsubscriber());
+                }
+                else
+                {
+                    subscribeTokenSource = CancellationTokenSource.CreateLinkedTokenSource(RunningToken);
+                    _subscribeTokenSources.Add(descriptor, subscribeTokenSource);
+                }
+            }
 
-            return Task.FromResult<IAsyncDisposable>(unsubscriber);
+            _ = PollingListeningConfigurationAsync(descriptor, subscribeTokenSource.Token);
+
+            return Task.FromResult<IAsyncDisposable>(CreateUnsubscriber());
+
+            HttpConfigurationChangeUnsubscriber CreateUnsubscriber()
+            {
+                return new HttpConfigurationChangeUnsubscriber(descriptor, notifyCallback, UnSubscribeConfigurationChange);
+            }
         }
 
         #endregion Public 方法
@@ -67,6 +90,21 @@ namespace Nacos.Http
         /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
+            _subscriptions.Dispose();
+
+            CancellationTokenSource[] ctss;
+
+            lock (_subscribeTokenSources)
+            {
+                ctss = _subscribeTokenSources.Values.ToArray();
+                _subscribeTokenSources.Clear();
+            }
+
+            foreach (var item in ctss)
+            {
+                item.SilenceRelease();
+            }
+
             base.Dispose(disposing);
         }
 
@@ -88,7 +126,7 @@ namespace Nacos.Http
             }
         }
 
-        private async Task PollingListeningConfigurationAsync(NacosConfigurationDescriptor descriptor, ConfigurationChangeNotifyCallback notifyCallback, CancellationToken token)
+        private async Task PollingListeningConfigurationAsync(NacosConfigurationDescriptor descriptor, CancellationToken token)
         {
             var scaler = new Scaler(0, 10, 60);
 
@@ -104,10 +142,50 @@ namespace Nacos.Http
 
                     if (!string.IsNullOrWhiteSpace(response))
                     {
+                        var hasSubscribe = _subscriptions.TryGetSubscribe(descriptor, out var state);
+
+                        if (!hasSubscribe)
+                        {
+                            Logger?.LogTrace("没有对配置 {0} 的订阅, 监听任务退出.", descriptor);
+                            return;
+                        }
+
+                        var notifyCallback = state?.NotifyCallback;
+
+                        if (notifyCallback is null)
+                        {
+                            //HACK 理论上不应该走到这里面的逻辑
+
+                            scaler.Add();
+
+                            Logger?.LogInformation("监听到配置 {0} 有变更, 但没有获取到回调委托, 等待 {1} s 后重试", descriptor, scaler.Value);
+
+                            await Task.Delay(TimeSpan.FromSeconds(scaler.Value), token).ConfigureAwait(false);
+
+                            continue;
+                        }
+
                         //HACK 响应值是否有内容？
                         var newDescriptor = await GetConfigurationAsync(descriptor, token).ConfigureAwait(false);
 
-                        await notifyCallback(newDescriptor, token).ConfigureAwait(false);
+                        if (!string.IsNullOrWhiteSpace(descriptor.Hash))    //hash为空，认为是第一次订阅，不触发回调
+                        {
+                            //HACK 在此处捕获异常，是否合理
+                            try
+                            {
+                                var tasks = notifyCallback.GetInvocationList()
+                                                          .Cast<ConfigurationChangeNotifyCallback>()
+                                                          .Select(callback => callback(newDescriptor, RunningToken))
+                                                          .ToArray();
+
+                                await Task.WhenAll(tasks).ConfigureAwait(false);
+                            }
+                            catch (Exception ex)
+                            {
+                                //HACK 是否需要异常处理
+                                Logger?.LogError(ex, "配置变更订阅处理异常, 变更信息: {0}", newDescriptor);
+                            }
+                        }
 
                         descriptor = descriptor.WithContent(newDescriptor.Content, newDescriptor.Hash ?? HashUtil.ComputeMD5(newDescriptor.Content).ToHexString());
                     }
@@ -131,6 +209,29 @@ namespace Nacos.Http
                     Logger?.LogError(ex, "监听配置变更异常 - {0} , 等待 {1} s 后重试", descriptor, scaler.Value);
 
                     await Task.Delay(TimeSpan.FromSeconds(scaler.Value), token).ConfigureAwait(false);
+                }
+            }
+        }
+
+        private void UnSubscribeConfigurationChange(NacosConfigurationDescriptor descriptor, ConfigurationChangeNotifyCallback notifyCallback)
+        {
+            if (notifyCallback is null)
+            {
+                return;
+            }
+
+            var configurationUniqueKey = descriptor.GetUniqueKey();
+
+            Logger?.LogInformation("取消配置 {0} 的变更通知订阅", configurationUniqueKey);
+
+            if (_subscriptions.RemoveSubscribe(descriptor, notifyCallback))
+            {
+                lock (_subscribeTokenSources)
+                {
+                    if (_subscribeTokenSources.TryGetValue(descriptor, out var cts))
+                    {
+                        cts.SilenceRelease();
+                    }
                 }
             }
         }

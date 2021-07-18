@@ -11,15 +11,25 @@ namespace Nacos.Http
     {
         #region Private 字段
 
-        private CancellationTokenSource? _tokenSource;
+        private NacosConfigurationDescriptor _descriptor;
+
+        private int _isDisposed = 0;
+
+        private ConfigurationChangeNotifyCallback _notifyCallback;
+
+        private Action<NacosConfigurationDescriptor, ConfigurationChangeNotifyCallback> _unSubscriberAction;
 
         #endregion Private 字段
 
         #region Public 构造函数
 
-        public HttpConfigurationChangeUnsubscriber(CancellationTokenSource tokenSource)
+        public HttpConfigurationChangeUnsubscriber(NacosConfigurationDescriptor descriptor,
+                                                   ConfigurationChangeNotifyCallback notifyCallback,
+                                                   Action<NacosConfigurationDescriptor, ConfigurationChangeNotifyCallback> unSubscriberAction)
         {
-            _tokenSource = tokenSource ?? throw new ArgumentNullException(nameof(tokenSource));
+            _descriptor = descriptor ?? throw new ArgumentNullException(nameof(descriptor));
+            _notifyCallback = notifyCallback ?? throw new ArgumentNullException(nameof(notifyCallback));
+            _unSubscriberAction = unSubscriberAction ?? throw new ArgumentNullException(nameof(unSubscriberAction));
         }
 
         #endregion Public 构造函数
@@ -28,9 +38,17 @@ namespace Nacos.Http
 
         public ValueTask DisposeAsync()
         {
-            if (Interlocked.Exchange(ref _tokenSource, null!) is CancellationTokenSource tokenSource)
+            if (Interlocked.Increment(ref _isDisposed) == 1)
             {
-                tokenSource.SilenceRelease();
+                var descriptor = _descriptor;
+                var notifyCallback = _notifyCallback;
+                var unSubscriberAction = _unSubscriberAction;
+
+                _descriptor = null!;
+                _notifyCallback = null!;
+                _unSubscriberAction = null!;
+
+                unSubscriberAction(descriptor, notifyCallback);
             }
             return ValueTask.CompletedTask;
         }

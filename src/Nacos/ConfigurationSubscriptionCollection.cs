@@ -23,17 +23,20 @@ namespace Nacos
         /// </summary>
         /// <param name="descriptor"></param>
         /// <param name="notifyCallback"></param>
-        public void AddSubscribe(NacosConfigurationDescriptor descriptor, ConfigurationChangeNotifyCallback notifyCallback)
+        /// <returns>是否为新建</returns>
+        public bool AddSubscribe(NacosConfigurationDescriptor descriptor, ConfigurationChangeNotifyCallback notifyCallback)
         {
             lock (_subscribeStates)
             {
                 if (_subscribeStates.TryGetValue(descriptor, out var existSubscribeState))
                 {
                     existSubscribeState.NotifyCallback += notifyCallback;
+                    return false;
                 }
                 else
                 {
                     _subscribeStates.Add(descriptor, new(descriptor, notifyCallback));
+                    return true;
                 }
             }
         }
@@ -64,7 +67,7 @@ namespace Nacos
         /// </summary>
         /// <param name="descriptor"></param>
         /// <param name="notifyCallback"></param>
-        /// <returns></returns>
+        /// <returns>是否移除了所有订阅</returns>
         public bool RemoveSubscribe(NacosConfigurationDescriptor descriptor, ConfigurationChangeNotifyCallback notifyCallback)
         {
             lock (_subscribeStates)
@@ -76,7 +79,8 @@ namespace Nacos
 
                     if (existNotifyCallback is null)
                     {
-                        return _subscribeStates.Remove(descriptor);
+                        _subscribeStates.Remove(descriptor);
+                        return true;
                     }
                     else
                     {
