@@ -191,7 +191,7 @@ namespace Microsoft.Extensions.Configuration
         public static NacosConfigurationSourceOptions SubscribeConfiguration(this NacosConfigurationSourceOptions options,
                                                                         string @namespace,
                                                                         string dataId,
-                                                                        string group = "DEFAULT_GROUP",
+                                                                        string group = Constants.DEFAULT_GROUP,
                                                                         bool optional = false,
                                                                         bool reloadOnChange = true)
         {

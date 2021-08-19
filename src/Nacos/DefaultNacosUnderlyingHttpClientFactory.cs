@@ -42,7 +42,7 @@ namespace Nacos
                     Debug.WriteLine("DefaultNacosUnderlyingHttpClientFactory - 替换旧的 HttpClientHandler");
                     var newHandler = new CountingNacosHttpClientHandler();
                     var oldHandler = Interlocked.Exchange(ref _httpClientHandler, newHandler);
-                    oldHandler.MakeDisposeReady();
+                    oldHandler.MakeDisposeReady(true);
                 }
             }, token);
         }
@@ -100,7 +100,7 @@ namespace Nacos
                 _disposedValue = true;
                 _runningTokenSource.SilenceRelease();
 
-                _httpClientHandler.MakeDisposeReady();
+                _httpClientHandler.MakeDisposeReady(disposing);
             }
         }
 
@@ -192,7 +192,7 @@ namespace Nacos
             /// <summary>
             /// 设置为可释放，不允许再被引用，并在引用为 0 时释放自身
             /// </summary>
-            public void MakeDisposeReady()
+            public void MakeDisposeReady(bool disposing)
             {
                 Debug.WriteLine("CountingNacosHttpClientHandler - Ready to Dispose");
                 lock (_syncRoot)
@@ -201,7 +201,7 @@ namespace Nacos
                     if (_referenceCount == 0)
                     {
                         Debug.WriteLine("CountingNacosHttpClientHandler - Dispose at MakeDisposeReady");
-                        Dispose();
+                        Dispose(disposing);
                     }
                 }
             }

@@ -24,7 +24,10 @@ namespace Cuture.Extensions.Configuration.Nacos
         #region Public 构造函数
 
         /// <inheritdoc cref="NacosConfigurationDescriptor(string, string, string, string?, string?)"/>
-        public OptionalNacosConfigurationDescriptor(string @namespace, string dataId, string group = "DEFAULT_GROUP", bool optional = false)
+        public OptionalNacosConfigurationDescriptor(string @namespace,
+                                                    string dataId,
+                                                    string group = Constants.DEFAULT_GROUP,
+                                                    bool optional = false)
             : base(@namespace, dataId, group, null, null)
         {
             Optional = optional;

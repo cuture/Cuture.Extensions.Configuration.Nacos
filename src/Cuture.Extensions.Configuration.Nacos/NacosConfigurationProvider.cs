@@ -167,6 +167,7 @@ namespace Cuture.Extensions.Configuration.Nacos
         {
             try
             {
+                _content = descriptor.Content;
                 LoadConfiguration(descriptor.Content);
 
                 OnReload();
@@ -201,12 +202,10 @@ namespace Cuture.Extensions.Configuration.Nacos
                 _disposedValue = true;
                 _content = null;
                 _parsers = null!;
-                if (_subscribeDisposer is not null)
+                var subscribeDisposer = Interlocked.Exchange(ref _subscribeDisposer, null);
+                if (subscribeDisposer is not null)
                 {
-                    var subscribeDisposer = _subscribeDisposer;
-                    _subscribeDisposer = null;
-
-                    Task.Run(async () =>
+                    _ = Task.Run(async () =>
                     {
                         try
                         {

@@ -30,7 +30,10 @@ namespace Cuture.Extensions.Configuration.Nacos
 
         #region Public 构造函数
 
-        public NacosConfigurationBuilder(IConfigurationBuilder configurationBuilder, IConfiguration? configuration, INacosConfigurationClient client, IEnumerable<IConfigurationParser> configurationParsers)
+        public NacosConfigurationBuilder(IConfigurationBuilder configurationBuilder,
+                                         IConfiguration? configuration,
+                                         INacosConfigurationClient client,
+                                         IEnumerable<IConfigurationParser> configurationParsers)
         {
             _configurationBuilder = configurationBuilder ?? throw new ArgumentNullException(nameof(configurationBuilder));
             Configuration = configuration;
