@@ -174,6 +174,8 @@ namespace Cuture.Extensions.Configuration.Nacos
             }
             catch (Exception ex)
             {
+                token.ThrowIfCancellationRequested();
+
                 _logger?.LogError(ex, "加载变更配置失败 {0}", _descriptor);
             }
 

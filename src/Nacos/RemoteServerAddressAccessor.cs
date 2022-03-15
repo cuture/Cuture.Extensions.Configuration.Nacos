@@ -174,6 +174,8 @@ namespace Nacos
                 }
                 catch (Exception ex)
                 {
+                    token.ThrowIfCancellationRequested();
+
                     if (i == 2)
                     {
                         break;

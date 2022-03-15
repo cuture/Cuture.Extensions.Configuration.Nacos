@@ -143,6 +143,8 @@ namespace Nacos
                 }
                 catch (Exception ex)
                 {
+                    token.ThrowIfCancellationRequested();
+
                     _logger?.LogError(ex, "请求执行失败 {0} - TargetServer: {1}", loginRequest, server);
                     _serverAddressAccessor.MoveNextAddress();
                     continue;
@@ -203,6 +205,8 @@ namespace Nacos
                         }
                         catch (Exception ex)
                         {
+                            cancellationToken.ThrowIfCancellationRequested();
+
                             failCount++;
                             var retryDelaySeconds = failCount > 12 ? 120 : failCount * 10;
                             _logger?.LogError(ex, "自动刷新AccessToken出现异常，等待 {0} s 后再次进行尝试", retryDelaySeconds);

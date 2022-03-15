@@ -182,6 +182,8 @@ namespace Nacos.Http
                             }
                             catch (Exception ex)
                             {
+                                token.ThrowIfCancellationRequested();
+
                                 //HACK 是否需要异常处理
                                 Logger?.LogError(ex, "配置变更订阅处理异常, 变更信息: {0}", newDescriptor);
                             }

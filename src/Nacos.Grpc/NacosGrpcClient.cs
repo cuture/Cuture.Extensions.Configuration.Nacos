@@ -211,7 +211,7 @@ namespace Nacos.Grpc
 
             Logger?.LogDebugSendPayload(requestPayload);
 
-            var responsePayload = await transportClient.RequestAsync(requestPayload, cancellationToken: token);
+            var responsePayload = await transportClient.RequestAsync(requestPayload, cancellationToken: token).ConfigureAwait(false);
 
             Logger?.LogDebugReceivePayload(responsePayload);
 

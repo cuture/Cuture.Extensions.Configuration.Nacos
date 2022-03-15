@@ -161,6 +161,8 @@ namespace Nacos.Http
                 }
                 catch (Exception ex)
                 {
+                    token.ThrowIfCancellationRequested();
+
                     Logger?.LogError(ex, "请求执行失败 {0} - TargetServer: {1}", request, server);
 
                     _serverAddressAccessor.MoveNextAddress();
