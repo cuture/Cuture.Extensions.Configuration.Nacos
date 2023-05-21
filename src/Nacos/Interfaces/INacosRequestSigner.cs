@@ -2,22 +2,21 @@
 
 using Nacos.Messages;
 
-namespace Nacos
+namespace Nacos;
+
+/// <summary>
+/// Nacos请求 签名器
+/// </summary>
+public interface INacosRequestSigner
 {
+    #region Public 方法
+
     /// <summary>
-    /// Nacos请求 签名器
+    /// 签名请求
     /// </summary>
-    public interface INacosRequestSigner
-    {
-        #region Public 方法
+    /// <param name="request"></param>
+    /// <returns></returns>
+    Task SignAsync(INacosRequest request);
 
-        /// <summary>
-        /// 签名请求
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        Task SignAsync(INacosRequest request);
-
-        #endregion Public 方法
-    }
+    #endregion Public 方法
 }

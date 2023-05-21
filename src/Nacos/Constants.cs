@@ -2,162 +2,161 @@
 
 using System.Reflection;
 
-namespace Nacos
+namespace Nacos;
+
+/// <summary>
+/// 常量定义
+/// </summary>
+public static class Constants
 {
     /// <summary>
-    /// 常量定义
+    /// 请求头
     /// </summary>
-    public static class Constants
+    public static class Headers
     {
         /// <summary>
-        /// 请求头
-        /// </summary>
-        public static class Headers
-        {
-            /// <summary>
-            /// Spas-AccessKey 
-            /// </summary> 
-            public const string SPAS_ACCESSKEY = "Spas-AccessKey";
-
-            /// <summary>
-            /// Spas-Signature
-            /// </summary>
-            public const string SPAS_SIGNATURE = "Spas-Signature";
-
-            /// <summary>
-            /// accessToken
-            /// </summary>
-            public const string ACCESS_TOKEN = Constants.ACCESS_TOKEN;
-
-            /// <summary>
-            /// Client-AppName 
-            /// </summary> 
-            public const string CLIENT_APPNAME_HEADER = "Client-AppName";
-
-            /// <summary>
-            /// Client-RequestTS 
-            /// </summary> 
-            public const string CLIENT_REQUEST_TS_HEADER = "Client-RequestTS";
-
-            /// <summary>
-            /// Client-RequestToken 
-            /// </summary> 
-            public const string CLIENT_REQUEST_TOKEN_HEADER = "Client-RequestToken";
-
-            /// <summary>
-            /// Client-Version 
-            /// </summary> 
-            public const string CLIENT_VERSION_HEADER = "Client-Version";
-
-            /// <summary>
-            /// exConfigInfo 
-            /// </summary> 
-            public const string EX_CONFIG_INFO_HEADER = "exConfigInfo";
-
-            /// <summary>
-            /// User-Agent 
-            /// </summary> 
-            public const string USER_AGENT_HEADER = "User-Agent";
-
-            /// <summary>
-            /// Request-Source 
-            /// </summary> 
-            public const string REQUEST_SOURCE_HEADER = "Request-Source";
-
-            /// <summary>
-            /// Content-Type 
-            /// </summary> 
-            public const string CONTENT_TYPE = "Content-Type";
-
-            /// <summary>
-            /// Content-Length 
-            /// </summary> 
-            public const string CONTENT_LENGTH = "Content-Length";
-
-            /// <summary>
-            /// Accept-Charset 
-            /// </summary> 
-            public const string ACCEPT_CHARSET = "Accept-Charset";
-
-            /// <summary>
-            /// Accept-Encoding 
-            /// </summary> 
-            public const string ACCEPT_ENCODING = "Accept-Encoding";
-
-            /// <summary>
-            /// Content-Encoding 
-            /// </summary> 
-            public const string CONTENT_ENCODING = "Content-Encoding";
-
-            /// <summary>
-            /// Requester 
-            /// </summary> 
-            public const string CONNECTION = "Requester";
-
-            /// <summary>
-            /// RequestId 
-            /// </summary> 
-            public const string REQUEST_ID = "RequestId";
-
-            /// <summary>
-            /// Request-Module 
-            /// </summary> 
-            public const string REQUEST_MODULE = "Request-Module";
-
-            /// <summary>
-            /// Timestamp 
-            /// </summary> 
-            public const string TIMESTAMP = "Timestamp";
-        }
+        /// Spas-AccessKey 
+        /// </summary> 
+        public const string SPAS_ACCESSKEY = "Spas-AccessKey";
 
         /// <summary>
-        /// 默认Http端口号
+        /// Spas-Signature
         /// </summary>
-        public const int DEFAULT_HTTP_PORT = 8848;
-
-        /// <summary>
-        /// 默认Grpc端口号偏移
-        /// </summary>
-        public const int DEFAULT_GRPC_PORT_OFFSET = 1000;
-
-        /// <summary>
-        /// 默认Grpc端口号
-        /// </summary>
-        public const int DEFAULT_GRPC_PORT = DEFAULT_HTTP_PORT + DEFAULT_GRPC_PORT_OFFSET;
-
-        /// <summary>
-        /// 客户端版本号
-        /// </summary>
-        public static string ClientVersion { get; } = TryGetClientVersion();
+        public const string SPAS_SIGNATURE = "Spas-Signature";
 
         /// <summary>
         /// accessToken
         /// </summary>
-        public const string ACCESS_TOKEN = "accessToken";
+        public const string ACCESS_TOKEN = Constants.ACCESS_TOKEN;
 
         /// <summary>
-        /// token过期时间
-        /// </summary>
-        public const string TOKEN_TTL = "tokenTtl";
+        /// Client-AppName 
+        /// </summary> 
+        public const string CLIENT_APPNAME_HEADER = "Client-AppName";
 
         /// <summary>
-        /// 客户端版本号前缀
-        /// </summary>
-        public const string CLIENT_VERSION_PREFIX = "Nacos-CSharp-Client_Cuture";
+        /// Client-RequestTS 
+        /// </summary> 
+        public const string CLIENT_REQUEST_TS_HEADER = "Client-RequestTS";
 
         /// <summary>
-        /// 默认组名称
-        /// </summary>
-        public const string DEFAULT_GROUP = "DEFAULT_GROUP";
+        /// Client-RequestToken 
+        /// </summary> 
+        public const string CLIENT_REQUEST_TOKEN_HEADER = "Client-RequestToken";
 
-        private static string TryGetClientVersion()
+        /// <summary>
+        /// Client-Version 
+        /// </summary> 
+        public const string CLIENT_VERSION_HEADER = "Client-Version";
+
+        /// <summary>
+        /// exConfigInfo 
+        /// </summary> 
+        public const string EX_CONFIG_INFO_HEADER = "exConfigInfo";
+
+        /// <summary>
+        /// User-Agent 
+        /// </summary> 
+        public const string USER_AGENT_HEADER = "User-Agent";
+
+        /// <summary>
+        /// Request-Source 
+        /// </summary> 
+        public const string REQUEST_SOURCE_HEADER = "Request-Source";
+
+        /// <summary>
+        /// Content-Type 
+        /// </summary> 
+        public const string CONTENT_TYPE = "Content-Type";
+
+        /// <summary>
+        /// Content-Length 
+        /// </summary> 
+        public const string CONTENT_LENGTH = "Content-Length";
+
+        /// <summary>
+        /// Accept-Charset 
+        /// </summary> 
+        public const string ACCEPT_CHARSET = "Accept-Charset";
+
+        /// <summary>
+        /// Accept-Encoding 
+        /// </summary> 
+        public const string ACCEPT_ENCODING = "Accept-Encoding";
+
+        /// <summary>
+        /// Content-Encoding 
+        /// </summary> 
+        public const string CONTENT_ENCODING = "Content-Encoding";
+
+        /// <summary>
+        /// Requester 
+        /// </summary> 
+        public const string CONNECTION = "Requester";
+
+        /// <summary>
+        /// RequestId 
+        /// </summary> 
+        public const string REQUEST_ID = "RequestId";
+
+        /// <summary>
+        /// Request-Module 
+        /// </summary> 
+        public const string REQUEST_MODULE = "Request-Module";
+
+        /// <summary>
+        /// Timestamp 
+        /// </summary> 
+        public const string TIMESTAMP = "Timestamp";
+    }
+
+    /// <summary>
+    /// 默认Http端口号
+    /// </summary>
+    public const int DEFAULT_HTTP_PORT = 8848;
+
+    /// <summary>
+    /// 默认Grpc端口号偏移
+    /// </summary>
+    public const int DEFAULT_GRPC_PORT_OFFSET = 1000;
+
+    /// <summary>
+    /// 默认Grpc端口号
+    /// </summary>
+    public const int DEFAULT_GRPC_PORT = DEFAULT_HTTP_PORT + DEFAULT_GRPC_PORT_OFFSET;
+
+    /// <summary>
+    /// 客户端版本号
+    /// </summary>
+    public static string ClientVersion { get; } = TryGetClientVersion();
+
+    /// <summary>
+    /// accessToken
+    /// </summary>
+    public const string ACCESS_TOKEN = "accessToken";
+
+    /// <summary>
+    /// token过期时间
+    /// </summary>
+    public const string TOKEN_TTL = "tokenTtl";
+
+    /// <summary>
+    /// 客户端版本号前缀
+    /// </summary>
+    public const string CLIENT_VERSION_PREFIX = "Nacos-CSharp-Client_Cuture";
+
+    /// <summary>
+    /// 默认组名称
+    /// </summary>
+    public const string DEFAULT_GROUP = "DEFAULT_GROUP";
+
+    private static string TryGetClientVersion()
+    {
+        var versionAttribute = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+        if (versionAttribute is null)
         {
-            var versionAttribute = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-            if (versionAttribute is null)
-            {
-                return $"{CLIENT_VERSION_PREFIX}:UnknownClientVersion";
-            }
-            return $"{CLIENT_VERSION_PREFIX}:v{versionAttribute.InformationalVersion}";
+            return $"{CLIENT_VERSION_PREFIX}:UnknownClientVersion";
         }
+        return $"{CLIENT_VERSION_PREFIX}:v{versionAttribute.InformationalVersion}";
     }
 }

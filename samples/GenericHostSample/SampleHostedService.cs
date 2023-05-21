@@ -6,34 +6,33 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace GenericHostSample
+namespace GenericHostSample;
+
+public class SampleHostedService : BackgroundService
 {
-    public class SampleHostedService : BackgroundService
+    private readonly ILogger _logger;
+    private readonly IConfiguration _configuration;
+    private SampleOptions _options;
+
+    public SampleHostedService(ILogger<SampleHostedService> logger, IConfiguration configuration, IOptions<SampleOptions> options, IOptionsMonitor<SampleOptions> optionsMonitor)
     {
-        private readonly ILogger _logger;
-        private readonly IConfiguration _configuration;
-        private SampleOptions _options;
+        _logger = logger;
+        _configuration = configuration;
+        _options = options.Value;
 
-        public SampleHostedService(ILogger<SampleHostedService> logger, IConfiguration configuration, IOptions<SampleOptions> options, IOptionsMonitor<SampleOptions> optionsMonitor)
+        optionsMonitor.OnChange(value =>
         {
-            _logger = logger;
-            _configuration = configuration;
-            _options = options.Value;
+            _logger.LogWarning($"Options OnChanged. New Value - {value}");
+            _options = value;
+        });
+    }
 
-            optionsMonitor.OnChange(value =>
-            {
-                _logger.LogWarning($"Options OnChanged. New Value - {value}");
-                _options = value;
-            });
-        }
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        _logger.LogInformation($"Value in SampleHostedService - {_options}");
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            _logger.LogInformation($"Value in SampleHostedService - {_options}");
+        var es = _configuration.GetValue<string?>("Sample:eAStringProperty");
 
-            var es = _configuration.GetValue<string?>("Sample:eAStringProperty");
-
-            await Task.Delay(Timeout.Infinite, stoppingToken);
-        }
+        await Task.Delay(Timeout.Infinite, stoppingToken);
     }
 }

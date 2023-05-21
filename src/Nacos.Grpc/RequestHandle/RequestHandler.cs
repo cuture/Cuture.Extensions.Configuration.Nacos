@@ -1,14 +1,13 @@
 ﻿using System.Threading.Tasks;
 using Nacos.Grpc.Messages;
 
-namespace Nacos.Grpc
+namespace Nacos.Grpc;
+
+internal class RequestHandler
+    : IRequestHandler<ClientDetectionRequest>
 {
-    internal class RequestHandler
-        : IRequestHandler<ClientDetectionRequest>
+    public Task<NacosResponse> HandleAsync(ClientDetectionRequest request)
     {
-        public Task<NacosResponse> HandleAsync(ClientDetectionRequest request)
-        {
-            return Task.FromResult<NacosResponse>(new ClientDetectionResponse());
-        }
+        return Task.FromResult<NacosResponse>(new ClientDetectionResponse());
     }
 }

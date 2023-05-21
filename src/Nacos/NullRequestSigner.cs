@@ -2,18 +2,17 @@
 
 using Nacos.Messages;
 
-namespace Nacos
+namespace Nacos;
+
+/// <summary>
+/// 空的 <see cref="INacosRequestSigner"/>
+/// </summary>
+public class NullRequestSigner : INacosRequestSigner
 {
-    /// <summary>
-    /// 空的 <see cref="INacosRequestSigner"/>
-    /// </summary>
-    public class NullRequestSigner : INacosRequestSigner
-    {
-        #region Public 方法
+    #region Public 方法
 
-        /// <inheritdoc/>
-        public Task SignAsync(INacosRequest request) => Task.CompletedTask;
+    /// <inheritdoc/>
+    public Task SignAsync(INacosRequest request) => Task.CompletedTask;
 
-        #endregion Public 方法
-    }
+    #endregion Public 方法
 }

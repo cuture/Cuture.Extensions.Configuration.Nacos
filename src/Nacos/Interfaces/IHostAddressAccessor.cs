@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Net;
 
-namespace Nacos
+namespace Nacos;
+
+/// <summary>
+/// 宿主地址访问器
+/// </summary>
+public interface IHostAddressAccessor : IDisposable
 {
     /// <summary>
-    /// 宿主地址访问器
+    /// IP地址
     /// </summary>
-    public interface IHostAddressAccessor : IDisposable
-    {
-        /// <summary>
-        /// IP地址
-        /// </summary>
-        IPAddress Address { get; }
-    }
+    IPAddress Address { get; }
 }

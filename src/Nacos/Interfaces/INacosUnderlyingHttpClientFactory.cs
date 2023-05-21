@@ -1,22 +1,21 @@
 ﻿using System;
 using System.Net.Http;
 
-namespace Nacos
+namespace Nacos;
+
+/// <summary>
+/// Nacos底层<see cref="HttpClient"/>工厂
+/// </summary>
+public interface INacosUnderlyingHttpClientFactory : IDisposable
 {
+    #region Public 方法
+
     /// <summary>
-    /// Nacos底层<see cref="HttpClient"/>工厂
+    /// 创建 <see cref="HttpClient"/>
     /// </summary>
-    public interface INacosUnderlyingHttpClientFactory : IDisposable
-    {
-        #region Public 方法
+    /// <param name="uri"></param>
+    /// <returns></returns>
+    HttpClient CreateClient(Uri uri);
 
-        /// <summary>
-        /// 创建 <see cref="HttpClient"/>
-        /// </summary>
-        /// <param name="uri"></param>
-        /// <returns></returns>
-        HttpClient CreateClient(Uri uri);
-
-        #endregion Public 方法
-    }
+    #endregion Public 方法
 }

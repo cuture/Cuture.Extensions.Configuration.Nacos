@@ -9,243 +9,242 @@ using Nacos.Exceptions;
 using Nacos.Internal;
 using Nacos.Utils;
 
-namespace Nacos
+namespace Nacos;
+
+/// <summary>
+/// 远程 <inheritdoc cref="IServerAddressAccessor"/>
+/// </summary>
+public sealed class RemoteServerAddressAccessor : IServerAddressAccessor
 {
-    /// <summary>
-    /// 远程 <inheritdoc cref="IServerAddressAccessor"/>
-    /// </summary>
-    public sealed class RemoteServerAddressAccessor : IServerAddressAccessor
+    #region Private 字段
+
+    private readonly INacosUnderlyingHttpClientFactory _httpClientFactory;
+    private readonly ILogger? _logger;
+    private readonly CancellationTokenSource _runningCts = new();
+    private readonly Uri _serverListRequestUri;
+    private readonly object _syncRoot = new();
+    private ServerUri[]? _allAddress;
+    private int? _count;
+    private ServerUri? _currentAddress;
+    private int _index = 0;
+    private bool _isDisposed = false;
+
+    #endregion Private 字段
+
+    #region Public 属性
+
+    /// <inheritdoc/>
+    public ServerUri[] AllAddress => ThrowNotInitialization(_allAddress);
+
+    /// <inheritdoc/>
+    public int Count => _count ?? throw new NacosException("Not Initialization yet");
+
+    /// <inheritdoc/>
+    public ServerUri CurrentAddress => ThrowNotInitialization(_currentAddress);
+
+    /// <inheritdoc/>
+    public string Name { get; }
+
+    #endregion Public 属性
+
+    #region Public 构造函数
+
+    /// <inheritdoc cref="RemoteServerAddressAccessor"/>
+    public RemoteServerAddressAccessor(Uri serverListRequestUri, ILogger<RemoteServerAddressAccessor>? logger)
     {
-        #region Private 字段
+        _serverListRequestUri = serverListRequestUri ?? throw new ArgumentNullException(nameof(serverListRequestUri));
+        _logger = logger;
 
-        private readonly INacosUnderlyingHttpClientFactory _httpClientFactory;
-        private readonly ILogger? _logger;
-        private readonly CancellationTokenSource _runningCts = new();
-        private readonly Uri _serverListRequestUri;
-        private readonly object _syncRoot = new();
-        private ServerUri[]? _allAddress;
-        private int? _count;
-        private ServerUri? _currentAddress;
-        private int _index = 0;
-        private bool _isDisposed = false;
+        _httpClientFactory = DefaultNacosUnderlyingHttpClientFactory.Shared;
 
-        #endregion Private 字段
+        Name = $"remote-{serverListRequestUri}";
+    }
 
-        #region Public 属性
+    #endregion Public 构造函数
 
-        /// <inheritdoc/>
-        public ServerUri[] AllAddress => ThrowNotInitialization(_allAddress);
+    #region Private 析构函数
 
-        /// <inheritdoc/>
-        public int Count => _count ?? throw new NacosException("Not Initialization yet");
+    /// <summary>
+    ///
+    /// </summary>
+    ~RemoteServerAddressAccessor()
+    {
+        Dispose();
+    }
 
-        /// <inheritdoc/>
-        public ServerUri CurrentAddress => ThrowNotInitialization(_currentAddress);
+    #endregion Private 析构函数
 
-        /// <inheritdoc/>
-        public string Name { get; }
+    #region Public 方法
 
-        #endregion Public 属性
-
-        #region Public 构造函数
-
-        /// <inheritdoc cref="RemoteServerAddressAccessor"/>
-        public RemoteServerAddressAccessor(Uri serverListRequestUri, ILogger<RemoteServerAddressAccessor>? logger)
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        if (_isDisposed)
         {
-            _serverListRequestUri = serverListRequestUri ?? throw new ArgumentNullException(nameof(serverListRequestUri));
-            _logger = logger;
+            return;
+        }
+        _isDisposed = true;
+        _runningCts.SilenceRelease();
 
-            _httpClientFactory = DefaultNacosUnderlyingHttpClientFactory.Shared;
+        GC.SuppressFinalize(this);
+    }
 
-            Name = $"remote-{serverListRequestUri}";
+    /// <inheritdoc/>
+    public ServerUri GetRandomAddress()
+    {
+        var allAddress = ThrowNotInitialization(_allAddress);
+
+        if (allAddress.Length == 1)
+        {
+            return allAddress[0];
         }
 
-        #endregion Public 构造函数
+        return allAddress[RandomUtil.Random(allAddress.Length)];
+    }
 
-        #region Private 析构函数
+    /// <inheritdoc/>
+    public async Task InitAsync(CancellationToken token)
+    {
+        var serverUris = await GetServerUrisFromAcsEndpointAsync(token).ConfigureAwait(false);
 
-        /// <summary>
-        ///
-        /// </summary>
-        ~RemoteServerAddressAccessor()
+        SetNewAddresses(serverUris);
+
+        StartAutoRefreshAddressBackgroundTask();
+    }
+
+    /// <inheritdoc/>
+    public ServerUri MoveNextAddress()
+    {
+        var allAddress = ThrowNotInitialization(_allAddress);
+
+        if (allAddress.Length == 1)
         {
-            Dispose();
+            return allAddress[0];
         }
 
-        #endregion Private 析构函数
-
-        #region Public 方法
-
-        /// <inheritdoc/>
-        public void Dispose()
+        lock (_syncRoot)
         {
-            if (_isDisposed)
+            _index++;
+            if (_index >= allAddress.Length)
             {
-                return;
+                _index = 0;
             }
-            _isDisposed = true;
-            _runningCts.SilenceRelease();
-
-            GC.SuppressFinalize(this);
+            _currentAddress = allAddress[_index];
+            return _currentAddress;
         }
+    }
 
-        /// <inheritdoc/>
-        public ServerUri GetRandomAddress()
+    #endregion Public 方法
+
+    #region Private 方法
+
+    private static T ThrowNotInitialization<T>(T? value)
+    {
+        if (value is null)
         {
-            var allAddress = ThrowNotInitialization(_allAddress);
-
-            if (allAddress.Length == 1)
-            {
-                return allAddress[0];
-            }
-
-            return allAddress[RandomUtil.Random(allAddress.Length)];
+            throw new NacosException("Not Initialization yet");
         }
+        return value;
+    }
 
-        /// <inheritdoc/>
-        public async Task InitAsync(CancellationToken token)
+    private async Task<Uri[]> GetServerUrisFromAcsEndpointAsync(CancellationToken token)
+    {
+        Uri[]? serverUris = null;
+
+        using var client = _httpClientFactory.CreateClient(_serverListRequestUri);
+
+        for (int i = 0; i <= 2; i++)
         {
-            var serverUris = await GetServerUrisFromAcsEndpointAsync(token).ConfigureAwait(false);
-
-            SetNewAddresses(serverUris);
-
-            StartAutoRefreshAddressBackgroundTask();
-        }
-
-        /// <inheritdoc/>
-        public ServerUri MoveNextAddress()
-        {
-            var allAddress = ThrowNotInitialization(_allAddress);
-
-            if (allAddress.Length == 1)
+            try
             {
-                return allAddress[0];
-            }
+                var content = await client.GetStringAsync(_serverListRequestUri, token).ConfigureAwait(false);
+                var lines = content.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
-            lock (_syncRoot)
-            {
-                _index++;
-                if (_index >= allAddress.Length)
+                serverUris = lines.Select(m =>
                 {
-                    _index = 0;
+                    var uriBuilder = new UriBuilder(m.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? m : $"http://{m}");
+                    if (!m.Contains(':'))
+                    {
+                        uriBuilder.Port = Constants.DEFAULT_HTTP_PORT;
+                    }
+                    return uriBuilder.Uri;
+                }).ToArray();
+
+                break;
+            }
+            catch (Exception ex)
+            {
+                token.ThrowIfCancellationRequested();
+
+                if (i == 2)
+                {
+                    break;
                 }
-                _currentAddress = allAddress[_index];
-                return _currentAddress;
+                _logger?.LogError(ex, "Get server address from remote - {0} fail. retrying.", _serverListRequestUri);
+                await Task.Delay(1000, token).ConfigureAwait(false);
             }
         }
 
-        #endregion Public 方法
-
-        #region Private 方法
-
-        private static T ThrowNotInitialization<T>(T? value)
+        if (serverUris is null
+            || !serverUris.Any())
         {
-            if (value is null)
-            {
-                throw new NacosException("Not Initialization yet");
-            }
-            return value;
+            throw new NacosException($"Get server address from remote - {_serverListRequestUri} fail.");
         }
 
-        private async Task<Uri[]> GetServerUrisFromAcsEndpointAsync(CancellationToken token)
+        return serverUris;
+    }
+
+    private void SetNewAddresses(Uri[]? serverUris)
+    {
+        if (serverUris is null
+            || !serverUris.Any())
         {
-            Uri[]? serverUris = null;
+            throw new NacosException("Get address from remote fail.");
+        }
 
-            using var client = _httpClientFactory.CreateClient(_serverListRequestUri);
+        var allAddress = serverUris.Select(m => ServerUri.Parse(m)).ToArray();
 
-            for (int i = 0; i <= 2; i++)
+        lock (_syncRoot)
+        {
+            _allAddress = allAddress;
+            _count = allAddress.Length;
+            _index = RandomUtil.Random(allAddress.Length);
+            _currentAddress = allAddress[_index];
+        }
+    }
+
+    private void StartAutoRefreshAddressBackgroundTask()
+    {
+        var token = _runningCts.Token;
+        _ = Task.Run(async () =>
+        {
+            var scaler = new Scaler(10, 10, 60);
+
+            while (!token.IsCancellationRequested)
             {
+                await Task.Delay(TimeSpan.FromSeconds(30), token).ConfigureAwait(false);
+
                 try
                 {
-                    var content = await client.GetStringAsync(_serverListRequestUri, token).ConfigureAwait(false);
-                    var lines = content.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                    var serverUris = await GetServerUrisFromAcsEndpointAsync(token).ConfigureAwait(false);
 
-                    serverUris = lines.Select(m =>
-                    {
-                        var uriBuilder = new UriBuilder(m.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? m : $"http://{m}");
-                        if (!m.Contains(':'))
-                        {
-                            uriBuilder.Port = Constants.DEFAULT_HTTP_PORT;
-                        }
-                        return uriBuilder.Uri;
-                    }).ToArray();
+                    SetNewAddresses(serverUris);
 
-                    break;
+                    scaler.Reset();
                 }
                 catch (Exception ex)
                 {
                     token.ThrowIfCancellationRequested();
 
-                    if (i == 2)
-                    {
-                        break;
-                    }
-                    _logger?.LogError(ex, "Get server address from remote - {0} fail. retrying.", _serverListRequestUri);
-                    await Task.Delay(1000, token).ConfigureAwait(false);
+                    scaler.Add();
+
+                    _logger?.LogError(ex, "Remote Address Refresh Fail. Retry after {0} s", scaler.Value);
+
+                    await Task.Delay(TimeSpan.FromSeconds(scaler.Value), token).ConfigureAwait(false);
                 }
             }
-
-            if (serverUris is null
-                || !serverUris.Any())
-            {
-                throw new NacosException($"Get server address from remote - {_serverListRequestUri} fail.");
-            }
-
-            return serverUris;
-        }
-
-        private void SetNewAddresses(Uri[]? serverUris)
-        {
-            if (serverUris is null
-                || !serverUris.Any())
-            {
-                throw new NacosException("Get address from remote fail.");
-            }
-
-            var allAddress = serverUris.Select(m => ServerUri.Parse(m)).ToArray();
-
-            lock (_syncRoot)
-            {
-                _allAddress = allAddress;
-                _count = allAddress.Length;
-                _index = RandomUtil.Random(allAddress.Length);
-                _currentAddress = allAddress[_index];
-            }
-        }
-
-        private void StartAutoRefreshAddressBackgroundTask()
-        {
-            var token = _runningCts.Token;
-            _ = Task.Run(async () =>
-            {
-                var scaler = new Scaler(10, 10, 60);
-
-                while (!token.IsCancellationRequested)
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(30), token).ConfigureAwait(false);
-
-                    try
-                    {
-                        var serverUris = await GetServerUrisFromAcsEndpointAsync(token).ConfigureAwait(false);
-
-                        SetNewAddresses(serverUris);
-
-                        scaler.Reset();
-                    }
-                    catch (Exception ex)
-                    {
-                        token.ThrowIfCancellationRequested();
-
-                        scaler.Add();
-
-                        _logger?.LogError(ex, "Remote Address Refresh Fail. Retry after {0} s", scaler.Value);
-
-                        await Task.Delay(TimeSpan.FromSeconds(scaler.Value), token).ConfigureAwait(false);
-                    }
-                }
-            }, token);
-        }
-
-        #endregion Private 方法
+        }, token);
     }
+
+    #endregion Private 方法
 }

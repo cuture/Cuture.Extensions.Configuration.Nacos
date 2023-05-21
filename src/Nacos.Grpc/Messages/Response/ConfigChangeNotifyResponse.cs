@@ -1,9 +1,8 @@
-﻿namespace Nacos.Grpc.Messages
+﻿namespace Nacos.Grpc.Messages;
+
+/// <summary>
+///
+/// </summary>
+public class ConfigChangeNotifyResponse : NacosResponse
 {
-    /// <summary>
-    ///
-    /// </summary>
-    public class ConfigChangeNotifyResponse : NacosResponse
-    {
-    }
 }

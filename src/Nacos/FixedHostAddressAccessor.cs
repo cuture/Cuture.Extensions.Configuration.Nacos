@@ -1,26 +1,25 @@
 ﻿using System;
 using System.Net;
 
-namespace Nacos
+namespace Nacos;
+
+/// <summary>
+/// 固定的 <inheritdoc cref="IHostAddressAccessor"/>
+/// </summary>
+public class FixedHostAddressAccessor : IHostAddressAccessor
 {
-    /// <summary>
-    /// 固定的 <inheritdoc cref="IHostAddressAccessor"/>
-    /// </summary>
-    public class FixedHostAddressAccessor : IHostAddressAccessor
+    /// <inheritdoc/>
+    public IPAddress Address { get; }
+
+    /// <inheritdoc cref="FixedHostAddressAccessor"/>
+    public FixedHostAddressAccessor(IPAddress address)
     {
-        /// <inheritdoc/>
-        public IPAddress Address { get; }
+        Address = address ?? throw new ArgumentNullException(nameof(address));
+    }
 
-        /// <inheritdoc cref="FixedHostAddressAccessor"/>
-        public FixedHostAddressAccessor(IPAddress address)
-        {
-            Address = address ?? throw new ArgumentNullException(nameof(address));
-        }
-
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-        }
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
     }
 }

@@ -1,13 +1,12 @@
-﻿namespace Nacos.Grpc.Messages
+﻿namespace Nacos.Grpc.Messages;
+
+/// <summary>
+/// 健康检查请求
+/// </summary>
+public class HealthCheckRequest : NacosRequest
 {
-    /// <summary>
-    /// 健康检查请求
-    /// </summary>
-    public class HealthCheckRequest : NacosRequest
+    /// <inheritdoc cref="HealthCheckRequest"/>
+    public HealthCheckRequest() : base(false)
     {
-        /// <inheritdoc cref="HealthCheckRequest"/>
-        public HealthCheckRequest() : base(false)
-        {
-        }
     }
 }

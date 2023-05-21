@@ -4,30 +4,29 @@ using Microsoft.Extensions.Configuration;
 
 using Nacos;
 
-namespace Cuture.Extensions.Configuration.Nacos
+namespace Cuture.Extensions.Configuration.Nacos;
+
+/// <summary>
+/// Nacos配置Builder
+/// </summary>
+public interface INacosConfigurationBuilder : IConfigurationBuilder
 {
+    #region Public 属性
+
     /// <summary>
-    /// Nacos配置Builder
+    /// 使用的客户端
     /// </summary>
-    public interface INacosConfigurationBuilder : IConfigurationBuilder
-    {
-        #region Public 属性
+    INacosConfigurationClient Client { get; }
 
-        /// <summary>
-        /// 使用的客户端
-        /// </summary>
-        INacosConfigurationClient Client { get; }
+    /// <summary>
+    /// 用于配置Nacos的 <see cref="IConfiguration"/>
+    /// </summary>
+    IConfiguration? Configuration { get; }
 
-        /// <summary>
-        /// 用于配置Nacos的 <see cref="IConfiguration"/>
-        /// </summary>
-        IConfiguration? Configuration { get; }
+    /// <summary>
+    /// 配置解析器
+    /// </summary>
+    IEnumerable<IConfigurationParser> ConfigurationParsers { get; }
 
-        /// <summary>
-        /// 配置解析器
-        /// </summary>
-        IEnumerable<IConfigurationParser> ConfigurationParsers { get; }
-
-        #endregion Public 属性
-    }
+    #endregion Public 属性
 }

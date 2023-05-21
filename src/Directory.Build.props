@@ -6,6 +6,8 @@
     <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
 
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -17,6 +19,10 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Include="..\..\readme.md" Link="readme.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+  
   <!--PackageVersion-->
   <PropertyGroup>
     <McrVersion>5.0.*</McrVersion>
