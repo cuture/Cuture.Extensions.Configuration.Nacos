@@ -243,19 +243,6 @@ public static class NacosConfigurationBuilderExtensions
         return new NacosConfigurationSource(new NacosConfigurationProviderOptions(client, descriptor, parsersCopy, loggerFactory));
     }
 
-#if NET5_0
-
-    private static IConfigurationSection GetRequiredSection(this IConfiguration configuration, string sectionName)
-    {
-        if (!configuration.TryGetSection(sectionName, out var configurationSection))
-        {
-            throw new ArgumentException($"未找到配置节点 - {sectionName}", nameof(configuration));
-        }
-        return configurationSection;
-    }
-
-#endif
-
     private static INacosConfigurationBuilder InternalAddNacos(this IConfigurationBuilder builder, Action<NacosConfigurationSourceOptions> setupAction, IConfiguration? configuration = null)
     {
         if (builder is null)

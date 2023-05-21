@@ -3,7 +3,7 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
 
-    <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
 
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
@@ -25,13 +25,9 @@
   
   <!--PackageVersion-->
   <PropertyGroup>
-    <McrVersion>5.0.*</McrVersion>
-    <ProtobufVersion>3.17.*</ProtobufVersion>
+    <McrVersion>7.0.*</McrVersion>
+    <ProtobufVersion>3.23.*</ProtobufVersion>
     <GrpcVersion>2.*</GrpcVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
-    <McrVersion>6.0.*</McrVersion>
   </PropertyGroup>
   
   <!--SourceLink-->
