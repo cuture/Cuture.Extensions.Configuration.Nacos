@@ -205,11 +205,11 @@ public static class NacosConfigurationBuilderExtensions
                 if (configuration.TryGetSection("Auth:ACS", out var acsSection))   //阿里云ACS认证信息
                 {
                     if (acsSection.TryGetSection("RegionId", out var regionIdSection)
-                        && regionIdSection is not null
+                        && regionIdSection.Value is not null
                         && acsSection.TryGetSection("AccessKeyId", out var accessKeyIdSection)
-                        && accessKeyIdSection is not null
+                        && accessKeyIdSection.Value is not null
                         && acsSection.TryGetSection("AccessKeySecret", out var accessKeySecretSection)
-                        && accessKeySecretSection is not null)
+                        && accessKeySecretSection.Value is not null)
                     {
                         options.WithAliyunACS(regionIdSection.Value, accessKeyIdSection.Value, accessKeySecretSection.Value);
                         return;
@@ -227,8 +227,8 @@ public static class NacosConfigurationBuilderExtensions
             {
                 throw new ArgumentException("Auth:User:Account 和 Auth:User:Password 必须同时设置");
             }
-            if (accountSection is not null
-                && passwordSection is not null)
+            if (accountSection?.Value is not null
+                && passwordSection?.Value is not null)
             {
                 options.WithUser(accountSection.Value, passwordSection.Value);
             }
@@ -286,7 +286,7 @@ public static class NacosConfigurationBuilderExtensions
                              });
 
         builder.Properties[NACOS_CLIENT_KEY] = client;
-        builder.Properties[NACOS_LOGGER_FACTORY_KEY] = options.LoggerFactory;
+        builder.Properties[NACOS_LOGGER_FACTORY_KEY] = options.LoggerFactory!;
 
         return new NacosConfigurationBuilder(builder, configuration, client, parsers);
     }

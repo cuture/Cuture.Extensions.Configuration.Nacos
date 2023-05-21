@@ -1,4 +1,4 @@
-# Cuture.Extensions.Configuration.Nacos
+﻿# Cuture.Extensions.Configuration.Nacos
 
 ## Intro
 
@@ -8,7 +8,7 @@
 项目考虑接入Nacos作为配置中心，然后发现Nacos官方有SDK - [nacos-sdk-csharp](https://github.com/nacos-group/nacos-sdk-csharp)，但是在尝试过程中遇到一些问题（比如Grpc端口号固定为http端口号+1000等）。。。本来想去修改官方SDK，结果完全理不清代码逻辑。。。那就参照着重写一个理想的针对当前使用场景的版本，顺便试着领悟一下官方SDK的设计思路。。。
 
 ## Features
-- 没有历史包袱 (当前仅支持`.net5`);
+- 没有历史包袱 (当前仅支持`.net6`+);
 - 便捷的Nacos地址配置，支持自定义Grpc端口号;
 - 更轻便直观的配置 (个人觉得);
 - 较少的包依赖 (可以在不引用Grpc包的情况下使用Http协议接入);
@@ -32,10 +32,10 @@
 
 ```powershell
 # 使用Http客户端
-Install-Package Cuture.Extensions.Configuration.Nacos -IncludePrerelease
+Install-Package Cuture.Extensions.Configuration.Nacos
 
 # 使用Grpc客户端
-Install-Package Cuture.Extensions.Configuration.Nacos.Grpc -IncludePrerelease
+Install-Package Cuture.Extensions.Configuration.Nacos.Grpc
 ```
 
 ### 2. 配置
