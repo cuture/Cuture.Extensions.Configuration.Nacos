@@ -233,6 +233,7 @@ public sealed class NacosConfigurationHttpClient : NacosHttpClient, INacosConfig
                 if (_subscribeTokenSources.TryGetValue(descriptor, out var cts))
                 {
                     cts.SilenceRelease();
+                    _subscribeTokenSources.Remove(descriptor);
                 }
             }
         }

@@ -3,7 +3,7 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
 
-    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
 
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
@@ -22,14 +22,22 @@
   <ItemGroup>
     <None Include="..\..\readme.md" Link="readme.md" Pack="true" PackagePath="/" />
   </ItemGroup>
-  
+
   <!--PackageVersion-->
   <PropertyGroup>
     <McrVersion>7.0.*</McrVersion>
-    <ProtobufVersion>3.23.*</ProtobufVersion>
+    <ProtobufVersion>3.29.*</ProtobufVersion>
     <GrpcVersion>2.*</GrpcVersion>
   </PropertyGroup>
-  
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <McrVersion>8.0.*</McrVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0'">
+    <McrVersion>9.0.*</McrVersion>
+  </PropertyGroup>
+
   <!--SourceLink-->
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -39,7 +47,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(Configuration)'=='Release'">
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.*" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)'=='Debug'">
