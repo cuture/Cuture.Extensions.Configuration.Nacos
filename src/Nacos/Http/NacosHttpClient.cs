@@ -142,7 +142,7 @@ public abstract class NacosHttpClient : INacosClient
             {
                 await _requestSigner.SignAsync(request).ConfigureAwait(false);
 
-                Logger?.LogDebug("执行请求 {0} - TargetServer: {1}", request, server);
+                Logger?.LogDebug("执行请求 {Request} - TargetServer: {Server}", request, server);
 
                 using var client = _httpClientFactory.CreateClient(server.HttpUri);
 
@@ -152,7 +152,7 @@ public abstract class NacosHttpClient : INacosClient
 
                 response = await client.SendAsync(httpRequest, cancellationToken: token).ConfigureAwait(false);
 
-                Logger?.LogDebug("Server: {0} , 请求 {1} 响应 - Code: {2} ", server, request, response.StatusCode);
+                Logger?.LogDebug("Server: {Server} , 请求 {Request} 响应 - Code: {StatusCode} ", server, request, response.StatusCode);
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
@@ -163,7 +163,7 @@ public abstract class NacosHttpClient : INacosClient
             {
                 token.ThrowIfCancellationRequested();
 
-                Logger?.LogError(ex, "请求执行失败 {0} - TargetServer: {1}", request, server);
+                Logger?.LogError(ex, "请求执行失败 {Request} - TargetServer: {Server}", request, server);
 
                 _serverAddressAccessor.MoveNextAddress();
 
@@ -189,7 +189,7 @@ public abstract class NacosHttpClient : INacosClient
             }
             else
             {
-                Logger?.LogError("请求未正确返回 - Request: {0} - 响应Code: {1} - TargetServer: {2}", request, response.StatusCode, server);
+                Logger?.LogError("请求未正确返回 - Request: {Request} - 响应Code: {StatusCode} - TargetServer: {Server}", request, response.StatusCode, server);
             }
         }
 

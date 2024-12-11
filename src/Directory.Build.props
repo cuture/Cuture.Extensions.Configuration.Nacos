@@ -23,6 +23,10 @@
     <None Include="..\..\readme.md" Link="readme.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Cuture.CodeAnalysis.LoggingCodeFixes" Version="1.0.*" PrivateAssets="All" />
+  </ItemGroup>
+
   <!--PackageVersion-->
   <PropertyGroup>
     <McrVersion>7.0.*</McrVersion>

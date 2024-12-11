@@ -146,7 +146,7 @@ public sealed class NacosConfigurationHttpClient : NacosHttpClient, INacosConfig
 
                     if (!hasSubscribe)
                     {
-                        Logger?.LogTrace("没有对配置 {0} 的订阅, 监听任务退出.", descriptor);
+                        Logger?.LogTrace("没有对配置 {Descriptor} 的订阅, 监听任务退出.", descriptor);
                         return;
                     }
 
@@ -158,7 +158,7 @@ public sealed class NacosConfigurationHttpClient : NacosHttpClient, INacosConfig
 
                         scaler.Add();
 
-                        Logger?.LogInformation("监听到配置 {0} 有变更, 但没有获取到回调委托, 等待 {1} s 后重试", descriptor, scaler.Value);
+                        Logger?.LogInformation("监听到配置 {Descriptor} 有变更, 但没有获取到回调委托, 等待 {ScalerValue} s 后重试", descriptor, scaler.Value);
 
                         await Task.Delay(TimeSpan.FromSeconds(scaler.Value), token).ConfigureAwait(false);
 
@@ -185,7 +185,7 @@ public sealed class NacosConfigurationHttpClient : NacosHttpClient, INacosConfig
                             token.ThrowIfCancellationRequested();
 
                             //HACK 是否需要异常处理
-                            Logger?.LogError(ex, "配置变更订阅处理异常, 变更信息: {0}", newDescriptor);
+                            Logger?.LogError(ex, "配置变更订阅处理异常, 变更信息: {Descriptor}", newDescriptor);
                         }
                     }
 
@@ -198,7 +198,7 @@ public sealed class NacosConfigurationHttpClient : NacosHttpClient, INacosConfig
             {
                 scaler.Add();
 
-                Logger?.LogInformation("监听配置变更, 无法找到资源 - {0} , 等待 {1} s 后重试", descriptor, scaler.Value);
+                Logger?.LogInformation("监听配置变更, 无法找到资源 - {Descriptor} , 等待 {ScalerValue} s 后重试", descriptor, scaler.Value);
 
                 await Task.Delay(TimeSpan.FromSeconds(scaler.Value), token).ConfigureAwait(false);
             }
@@ -208,7 +208,7 @@ public sealed class NacosConfigurationHttpClient : NacosHttpClient, INacosConfig
 
                 scaler.Add();
 
-                Logger?.LogError(ex, "监听配置变更异常 - {0} , 等待 {1} s 后重试", descriptor, scaler.Value);
+                Logger?.LogError(ex, "监听配置变更异常 - {Descriptor} , 等待 {ScalerValue} s 后重试", descriptor, scaler.Value);
 
                 await Task.Delay(TimeSpan.FromSeconds(scaler.Value), token).ConfigureAwait(false);
             }
@@ -224,7 +224,7 @@ public sealed class NacosConfigurationHttpClient : NacosHttpClient, INacosConfig
 
         var configurationUniqueKey = descriptor.GetUniqueKey();
 
-        Logger?.LogInformation("取消配置 {0} 的变更通知订阅", configurationUniqueKey);
+        Logger?.LogInformation("取消配置 {Configuration} 的变更通知订阅", configurationUniqueKey);
 
         if (_subscriptions.RemoveSubscribe(descriptor, notifyCallback))
         {

@@ -54,7 +54,7 @@ internal class NacosConfigurationProvider : ConfigurationProvider, IDisposable
         var content = _content;
         if (content is null)
         {
-            _logger?.LogDebug("Load - 强制同步获取配置 - {0}", _descriptor);
+            _logger?.LogDebug("Load - 强制同步获取配置 - {Descriptor}", _descriptor);
             try
             {
                 var configuration = GetConfigurationAsync().WaitWithoutContext();
@@ -64,7 +64,7 @@ internal class NacosConfigurationProvider : ConfigurationProvider, IDisposable
             {
                 if (_descriptor.Optional)
                 {
-                    _logger?.LogDebug("Load - 没有找到配置 - {0}", _descriptor);
+                    _logger?.LogDebug("Load - 没有找到配置 - {Descriptor}", _descriptor);
                     LoadConfiguration(null);
                     return;
                 }
@@ -86,7 +86,7 @@ internal class NacosConfigurationProvider : ConfigurationProvider, IDisposable
     /// <returns></returns>
     internal async Task InitAsync()
     {
-        _logger?.LogDebug("开始初始化 - {0}", this);
+        _logger?.LogDebug("开始初始化 - {ConfigurationProvider}", this);
 
         using var initCTS = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
@@ -99,7 +99,7 @@ internal class NacosConfigurationProvider : ConfigurationProvider, IDisposable
 
                 _content = configuration.Content;
 
-                _logger?.LogDebug("{0} 配置获取成功 - {1}", this, _content);
+                _logger?.LogDebug("{ConfigurationProvider} 配置获取成功 - {Content}", this, _content);
             }
             catch (ConfigurationNotFoundException)
             {
@@ -109,26 +109,26 @@ internal class NacosConfigurationProvider : ConfigurationProvider, IDisposable
                 }
             }
 
-            _logger?.LogDebug("开始订阅配置变更 - {0}", this);
+            _logger?.LogDebug("开始订阅配置变更 - {ConfigurationProvider}", this);
 
             var subscribeDescriptor = _descriptor.WithContent(_content, HashUtil.ComputeMD5(_content).ToHexString());
 
             _subscribeDisposer = await _client.SubscribeConfigurationChangeAsync(subscribeDescriptor, OnConfigurationChangeAsync, initToken).ConfigureAwait(false);
 
-            _logger?.LogDebug("配置变更订阅完成 - {0}", this);
+            _logger?.LogDebug("配置变更订阅完成 - {ConfigurationProvider}", this);
         }
         catch (OperationCanceledException)
         {
             if (initToken.IsCancellationRequested)
             {
-                _logger?.LogError("获取配置超时 - {0}", this);
+                _logger?.LogError("获取配置超时 - {ConfigurationProvider}", this);
                 throw new RequestTimeoutException($"获取配置超时 - {_descriptor}");
             }
             throw;
         }
         catch (Exception ex)
         {
-            _logger?.LogError(ex, "配置提供器初始化异常 - {0}", this);
+            _logger?.LogError(ex, "配置提供器初始化异常 - {ConfigurationProvider}", this);
 
             throw new NacosException($"配置提供器初始化异常 - {_descriptor}", ex);
         }
@@ -176,7 +176,7 @@ internal class NacosConfigurationProvider : ConfigurationProvider, IDisposable
         {
             token.ThrowIfCancellationRequested();
 
-            _logger?.LogError(ex, "加载变更配置失败 {0}", _descriptor);
+            _logger?.LogError(ex, "加载变更配置失败 {Descriptor}", _descriptor);
         }
 
         return Task.CompletedTask;
@@ -215,7 +215,7 @@ internal class NacosConfigurationProvider : ConfigurationProvider, IDisposable
                     }
                     catch (Exception ex)
                     {
-                        _logger?.LogError(ex, "释放配置变更订阅异常 - {0}", _descriptor);
+                        _logger?.LogError(ex, "释放配置变更订阅异常 - {Descriptor}", _descriptor);
                     }
                 });
             }

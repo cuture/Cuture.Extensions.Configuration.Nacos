@@ -51,7 +51,7 @@ public class AliyunKMSConfigurationClientMiddleware : INacosConfigurationClientM
 
         if (context.Descriptor.DataId.StartsWith("cipher-", StringComparison.OrdinalIgnoreCase))
         {
-            _logger?.LogDebug("start decrypt kms encrypt configuration {0}", context.Descriptor);
+            _logger?.LogDebug("start decrypt kms encrypt configuration {Descriptor}", context.Descriptor);
 
             var decryptedContent = await DecryptConfigurationAsync(result, context.CancellationToken).ConfigureAwait(false);
 
@@ -79,13 +79,13 @@ public class AliyunKMSConfigurationClientMiddleware : INacosConfigurationClientM
 
         var signature = HttpUtility.UrlEncode(Convert.ToBase64String(signatureData));
 
-        _logger?.LogDebug("Configuration {0} Kms Decrypt Signature {1}", descriptor, signature);
+        _logger?.LogDebug("Configuration {Descriptor} Kms Decrypt Signature {Signature}", descriptor, signature);
 
         var url = $"{host}?{queryString}&Signature={signature}";
 
         var uri = new Uri(url);
 
-        _logger?.LogDebug("Configuration {0} Kms Decrypt request url {1}", descriptor, url);
+        _logger?.LogDebug("Configuration {Descriptor} Kms Decrypt request url {Url}", descriptor, url);
 
         using var httpclient = _httpClientFactory.CreateClient(uri);
 
@@ -95,7 +95,7 @@ public class AliyunKMSConfigurationClientMiddleware : INacosConfigurationClientM
 
         var response = await responseMessage.Content.ReadFromJsonAsync<KmsDecryptResponse>(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        _logger?.LogDebug("Configuration {0} Kms Decrypt Result {1}", descriptor, response?.Plaintext);
+        _logger?.LogDebug("Configuration {Descriptor} Kms Decrypt Result {Response}", descriptor, response?.Plaintext);
 
         if (response?.Plaintext is null)
         {

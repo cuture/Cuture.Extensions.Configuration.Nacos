@@ -180,7 +180,7 @@ public sealed class RemoteServerAddressAccessor : IServerAddressAccessor
                 {
                     break;
                 }
-                _logger?.LogError(ex, "Get server address from remote - {0} fail. retrying.", _serverListRequestUri);
+                _logger?.LogError(ex, "Get server address from remote - {Uri} fail. retrying.", _serverListRequestUri);
                 await Task.Delay(1000, token).ConfigureAwait(false);
             }
         }
@@ -238,7 +238,7 @@ public sealed class RemoteServerAddressAccessor : IServerAddressAccessor
 
                     scaler.Add();
 
-                    _logger?.LogError(ex, "Remote Address Refresh Fail. Retry after {0} s", scaler.Value);
+                    _logger?.LogError(ex, "Remote Address Refresh Fail. Retry after {ScalerValue} s", scaler.Value);
 
                     await Task.Delay(TimeSpan.FromSeconds(scaler.Value), token).ConfigureAwait(false);
                 }

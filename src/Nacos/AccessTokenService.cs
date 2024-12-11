@@ -123,7 +123,7 @@ public class AccessTokenService : IAccessTokenService
 
                 using var client = _httpClientFactory.CreateClient(server.HttpUri);
 
-                _logger?.LogInformation("使用用户名 {0} 登录 {1}", loginRequest.Account, server);
+                _logger?.LogInformation("使用用户名 {Account} 登录 {Server}", loginRequest.Account, server);
 
                 responseMessage = await client.SendAsync(httpRequest, token).ConfigureAwait(false);
 
@@ -135,7 +135,7 @@ public class AccessTokenService : IAccessTokenService
 
                     if (response is not null)
                     {
-                        _logger?.LogInformation("使用用户名 {0} 登录 {1} 成功", _user.Account, server);
+                        _logger?.LogInformation("使用用户名 {Account} 登录 {Server} 成功", _user.Account, server);
                         return response;
                     }
                     throw new LoginFailException($"响应内容 {content} 无法正确序列化");
@@ -145,7 +145,7 @@ public class AccessTokenService : IAccessTokenService
             {
                 token.ThrowIfCancellationRequested();
 
-                _logger?.LogError(ex, "请求执行失败 {0} - TargetServer: {1}", loginRequest, server);
+                _logger?.LogError(ex, "请求执行失败 {Request} - TargetServer: {Server}", loginRequest, server);
                 _serverAddressAccessor.MoveNextAddress();
                 continue;
             }
@@ -156,7 +156,7 @@ public class AccessTokenService : IAccessTokenService
             }
             else
             {
-                _logger?.LogError("使用用户名 {0} 登录 {1} 失败 - StatusCode: {2} Message: {3}", loginRequest.Account, server, responseMessage.StatusCode, content);
+                _logger?.LogError("使用用户名 {Account} 登录 {Server} 失败 - StatusCode: {StatusCode} Message: {Content}", loginRequest.Account, server, responseMessage.StatusCode, content);
             }
             _serverAddressAccessor.MoveNextAddress();
         }
@@ -181,7 +181,7 @@ public class AccessTokenService : IAccessTokenService
                 //有效期还有三分之一时，进行刷新
                 var interval = TimeSpan.FromSeconds(tokenTtl * 0.66);
 
-                _logger?.LogInformation("{0} s 后自动刷新AccessToken", interval.TotalSeconds);
+                _logger?.LogInformation("{IntervalTotalSeconds} s 后自动刷新AccessToken", interval.TotalSeconds);
                 await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
 
                 //循环尝试
@@ -197,7 +197,7 @@ public class AccessTokenService : IAccessTokenService
 
                         Interlocked.Exchange(ref _accessTokenWrapper, new(loginResponse.AccessToken, tokenTtl));
 
-                        _logger?.LogInformation("自动刷新AccessToken成功，Token: {0} Ttl: {1}", loginResponse.AccessToken, tokenTtl);
+                        _logger?.LogInformation("自动刷新AccessToken成功，Token: {AccessToken} Ttl: {TokenTtl}", loginResponse.AccessToken, tokenTtl);
 
                         failCount = 0;
 
@@ -209,7 +209,7 @@ public class AccessTokenService : IAccessTokenService
 
                         failCount++;
                         var retryDelaySeconds = failCount > 12 ? 120 : failCount * 10;
-                        _logger?.LogError(ex, "自动刷新AccessToken出现异常，等待 {0} s 后再次进行尝试", retryDelaySeconds);
+                        _logger?.LogError(ex, "自动刷新AccessToken出现异常，等待 {RetryDelaySeconds} s 后再次进行尝试", retryDelaySeconds);
 
                         await Task.Delay(TimeSpan.FromSeconds(retryDelaySeconds), cancellationToken).ConfigureAwait(false);
                     }
