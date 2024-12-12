@@ -34,12 +34,8 @@
     <GrpcVersion>2.*</GrpcVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net9.0'">
     <McrVersion>8.0.*</McrVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0'">
-    <McrVersion>9.0.*</McrVersion>
   </PropertyGroup>
 
   <!--SourceLink-->
